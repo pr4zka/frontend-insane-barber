@@ -1,0 +1,272 @@
+%% Diagrama de Clases — Insane Barber
+
+classDiagram
+    class Rol {
+        +int id
+        +String nombre
+    }
+
+    class Usuario {
+        +int id
+        +String nombre
+        +String email
+        +String password
+        +int rolId
+        +boolean estado
+    }
+
+    class Cliente {
+        +int id
+        +String nombre
+        +String telefono
+        +String email
+        +Date fechaRegistro
+    }
+
+    class Barbero {
+        +int id
+        +String nombre
+        +String telefono
+        +String especialidad
+        +boolean estado
+    }
+
+    class Servicio {
+        +int id
+        +String nombre
+        +String descripcion
+        +Decimal precio
+        +int duracionMin
+        +boolean estado
+    }
+
+    class Turno {
+        +int id
+        +int clienteId
+        +int barberoId
+        +int servicioId
+        +Date fecha
+        +Time hora
+        +String estado
+        +String observacion
+    }
+
+    class Promocion {
+        +int id
+        +String nombre
+        +String descripcion
+        +Decimal porcentaje
+        +Date fechaInicio
+        +Date fechaFin
+        +boolean estado
+    }
+
+    class Reclamo {
+        +int id
+        +int clienteId
+        +String descripcion
+        +Date fecha
+        +String estado
+    }
+
+    class SeguimientoReclamo {
+        +int id
+        +int reclamoId
+        +String comentario
+        +String estadoAnterior
+        +String estadoNuevo
+        +DateTime fecha
+    }
+
+    class Presupuesto {
+        +int id
+        +int clienteId
+        +DateTime fecha
+        +Decimal total
+        +String estado
+        +String observacion
+    }
+
+    class DetallePresupuesto {
+        +int id
+        +int presupuestoId
+        +int servicioId
+        +int cantidad
+        +Decimal precioUnitario
+        +Decimal subtotal
+    }
+
+    class Insumo {
+        +int id
+        +String nombre
+        +String descripcion
+        +String unidad
+        +Decimal stock
+        +boolean estado
+    }
+
+    class InsumoUtilizado {
+        +int id
+        +int turnoId
+        +int insumoId
+        +Decimal cantidad
+        +DateTime fecha
+    }
+
+    class Caja {
+        +int id
+        +int usuarioId
+        +DateTime fechaApertura
+        +DateTime fechaCierre
+        +Decimal montoInicial
+        +Decimal montoFinal
+        +String estado
+    }
+
+    class MovimientoCaja {
+        +int id
+        +int cajaId
+        +String tipo
+        +String concepto
+        +Decimal monto
+        +DateTime fecha
+    }
+
+    class Pago {
+        +int id
+        +int turnoId
+        +String metodoPago
+        +Decimal monto
+        +Decimal montoOriginal
+        +int promocionId
+        +int descuentoId
+        +Decimal porcentajeAplicado
+        +String dpagoRef
+        +String estado
+        +DateTime fecha
+    }
+
+    class NotaCreditoDebito {
+        +int id
+        +int pagoId
+        +String tipo
+        +Decimal monto
+        +String motivo
+        +String estado
+        +DateTime fecha
+    }
+
+    class LibroVentas {
+        +int id
+        +int pagoId
+        +DateTime fecha
+        +String concepto
+        +Decimal monto
+        +String metodoPago
+    }
+
+    class Descuento {
+        +int id
+        +String nombre
+        +String descripcion
+        +Decimal porcentaje
+        +boolean estado
+    }
+
+    class NotaRemisionVenta {
+        +int id
+        +int turnoId
+        +DateTime fecha
+        +String observacion
+    }
+
+    class Proveedor {
+        +int id
+        +String nombre
+        +String ruc
+        +String telefono
+        +String email
+        +String direccion
+        +boolean estado
+    }
+
+    class OrdenCompra {
+        +int id
+        +int proveedorId
+        +DateTime fecha
+        +String estado
+        +Decimal total
+        +String observacion
+    }
+
+    class DetalleOrdenCompra {
+        +int id
+        +int ordenCompraId
+        +int insumoId
+        +Decimal cantidad
+        +Decimal precioUnitario
+        +Decimal subtotal
+    }
+
+    class LibroCompras {
+        +int id
+        +int ordenCompraId
+        +DateTime fecha
+        +String concepto
+        +Decimal monto
+        +String proveedor
+    }
+
+    class NotaRemision {
+        +int id
+        +int ordenCompraId
+        +DateTime fecha
+        +String observacion
+    }
+
+    class NotaCDCompra {
+        +int id
+        +int ordenCompraId
+        +String tipo
+        +Decimal monto
+        +String motivo
+        +String estado
+        +DateTime fecha
+    }
+
+    class AjusteCompra {
+        +int id
+        +int ordenCompraId
+        +String tipo
+        +String descripcion
+        +Decimal montoAnterior
+        +Decimal montoNuevo
+        +DateTime fecha
+    }
+
+    Rol "1" --> "*" Usuario : tiene
+    Cliente "1" --> "*" Turno : agenda
+    Barbero "1" --> "*" Turno : atiende
+    Servicio "1" --> "*" Turno : se aplica en
+    Cliente "1" --> "*" Reclamo : realiza
+    Reclamo "1" --> "*" SeguimientoReclamo : tiene seguimiento
+    Cliente "1" --> "*" Presupuesto : solicita
+    Presupuesto "1" --> "*" DetallePresupuesto : contiene
+    Servicio "1" --> "*" DetallePresupuesto : se presupuesta en
+    Turno "1" --> "*" InsumoUtilizado : consume
+    Insumo "1" --> "*" InsumoUtilizado : se usa en
+    Usuario "1" --> "*" Caja : opera
+    Caja "1" --> "*" MovimientoCaja : registra
+    Turno "1" --> "0..1" Pago : genera
+    Promocion "1" --> "*" Pago : se aplica en
+    Descuento "1" --> "*" Pago : se aplica en
+    Pago "1" --> "*" NotaCreditoDebito : puede tener
+    Pago "1" --> "1" LibroVentas : se registra en
+    Turno "1" --> "0..1" NotaRemisionVenta : genera
+    Proveedor "1" --> "*" OrdenCompra : recibe
+    OrdenCompra "1" --> "*" DetalleOrdenCompra : contiene
+    Insumo "1" --> "*" DetalleOrdenCompra : se compra en
+    OrdenCompra "1" --> "0..1" LibroCompras : se registra en
+    OrdenCompra "1" --> "0..1" NotaRemision : genera
+    OrdenCompra "1" --> "*" NotaCDCompra : puede tener
+    OrdenCompra "1" --> "*" AjusteCompra : puede tener

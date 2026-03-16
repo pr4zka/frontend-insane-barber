@@ -1,0 +1,32 @@
+%% Casos de Uso — Módulo 4: Compras
+
+graph LR
+    Admin((Administrador))
+
+    subgraph Modulo 4 - Compras
+        UC1[Registrar proveedor]
+        UC2[Editar proveedor]
+        UC3[Crear orden de compra]
+        UC4[Aprobar orden de compra]
+        UC5[Cancelar orden de compra]
+        UC6[Recibir mercadería]
+        UC7[Consultar libro de compras]
+        UC8[Ver notas de remisión]
+        UC9[Emitir nota C/D compra]
+        UC10[Anular nota C/D compra]
+        UC11[Registrar ajuste de compra]
+        UC12[Descargar informe PDF]
+    end
+
+    Admin --- UC1
+    Admin --- UC2
+    Admin --- UC3
+    Admin --- UC4
+    Admin --- UC5
+    Admin --- UC6
+    Admin --- UC7
+    Admin --- UC8
+    Admin --- UC9
+    Admin --- UC10
+    Admin --- UC11
+    Admin --- UC12

@@ -1,0 +1,17 @@
+%% Diagrama de Actividad — Registrar Atención
+
+flowchart TD
+    A(("Inicio")) --> B["Consultar turnos del día"]
+    B --> C["Seleccionar turno agendado"]
+    C --> D{"¿Cliente presente?"}
+    D -- No --> E["Marcar turno como ausente"]
+    E --> Z(("Fin"))
+    D -- Sí --> F["Iniciar atención"]
+    F --> G["Realizar servicio"]
+    G --> H{"¿Servicio adicional?"}
+    H -- Sí --> I["Agregar servicio adicional"]
+    I --> G
+    H -- No --> J["Registrar insumos utilizados"]
+    J --> K["Marcar turno como atendido"]
+    K --> L["Registrar observaciones"]
+    L --> Z

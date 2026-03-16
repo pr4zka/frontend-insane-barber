@@ -1,0 +1,29 @@
+@startuml Actividad - Emitir Nota de Crédito/Débito
+
+start
+:Buscar pago registrado;
+
+if (¿Pago encontrado?) then (Sí)
+    if (Seleccionar tipo de nota) then (Nota de Crédito)
+        :Ingresar monto a acreditar;
+    else (Nota de Débito)
+        :Ingresar monto a debitar;
+    endif
+
+    :Ingresar motivo;
+    :Validar monto contra pago original;
+
+    if (¿Monto válido?) then (Sí)
+        :Registrar nota de crédito/débito;
+        :Registrar movimiento en caja;
+        :Actualizar libro de ventas;
+    else (No)
+        :Mostrar error: monto inválido;
+    endif
+else (No)
+    :Mostrar error: pago no encontrado;
+endif
+
+stop
+
+@enduml

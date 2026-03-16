@@ -1,0 +1,29 @@
+@startuml Diagrama de Despliegue - Insane Barber
+
+node "Dispositivo del Usuario" {
+    component "Navegador Web\n(Chrome / Firefox)" as NAV
+}
+
+node "Servidor de Aplicación" {
+    package "Frontend" {
+        component "Aplicación Web\n(Next.js / React / Tailwind CSS)" as FE
+    }
+    package "Backend" {
+        component "API REST\n(Node.js / Express / Prisma)" as API
+    }
+}
+
+node "Servidor de Base de Datos" {
+    database "PostgreSQL\nBase de Datos" as DB
+}
+
+node "Servicios Externos" {
+    component "Pasarela de Pagos\n(API Dpago)" as DPAGO
+}
+
+NAV --> FE : "HTTP/HTTPS"
+FE --> API : "API REST\n(JSON)"
+API --> DB : "TCP/IP\n(Puerto 5432)"
+API --> DPAGO : "HTTPS\n(API REST)"
+
+@enduml

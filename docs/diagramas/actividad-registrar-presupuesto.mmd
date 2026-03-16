@@ -1,0 +1,18 @@
+%% Diagrama de Actividad — Registrar Presupuesto
+
+flowchart TD
+    A(("Inicio")) --> B["Buscar cliente"]
+    B --> C{"¿Cliente existe?"}
+    C -- No --> D["Registrar nuevo cliente"]
+    D --> E["Seleccionar servicios"]
+    C -- Sí --> E
+    E --> F["Agregar servicio al detalle"]
+    F --> G{"¿Agregar otro servicio?"}
+    G -- Sí --> F
+    G -- No --> H["Calcular total del presupuesto"]
+    H --> I["Agregar observaciones"]
+    I --> J["Guardar presupuesto"]
+    J --> K{"¿Imprimir PDF?"}
+    K -- Sí --> L["Generar e imprimir PDF"]
+    L --> Z(("Fin"))
+    K -- No --> Z

@@ -1,0 +1,26 @@
+%% Diagrama de Actividad — Apertura y Cierre de Caja
+
+flowchart TD
+    A(("Inicio")) --> B{"¿Operación?"}
+
+    B -- Apertura --> C["Verificar que no haya caja abierta"]
+    C --> D{"¿Existe caja abierta?"}
+    D -- Sí --> E["Mostrar error: caja ya abierta"]
+    E --> Z(("Fin"))
+    D -- No --> F["Ingresar monto inicial"]
+    F --> G["Registrar apertura de caja"]
+    G --> H["Caja abierta exitosamente"]
+    H --> Z
+
+    B -- Cierre --> I["Verificar que exista caja abierta"]
+    I --> J{"¿Caja abierta?"}
+    J -- No --> K["Mostrar error: no hay caja abierta"]
+    K --> Z
+    J -- Sí --> L["Calcular monto final"]
+    L --> M["Realizar arqueo"]
+    M --> N{"¿Montos coinciden?"}
+    N -- No --> O["Registrar diferencia"]
+    O --> P["Registrar cierre de caja"]
+    N -- Sí --> P
+    P --> Q["Caja cerrada exitosamente"]
+    Q --> Z

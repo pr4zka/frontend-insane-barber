@@ -1,0 +1,28 @@
+@startuml Actividad - Registrar Presupuesto
+
+start
+:Buscar cliente;
+
+if (¿Cliente existe?) then (Sí)
+else (No)
+    :Registrar nuevo cliente;
+endif
+
+:Seleccionar servicios;
+
+repeat
+    :Agregar servicio al detalle;
+repeat while (¿Agregar otro servicio?) is (Sí)
+->No;
+
+:Calcular total del presupuesto;
+:Agregar observaciones;
+:Guardar presupuesto;
+
+if (¿Imprimir PDF?) then (Sí)
+    :Generar e imprimir PDF;
+endif
+
+stop
+
+@enduml

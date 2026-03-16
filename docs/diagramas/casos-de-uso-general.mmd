@@ -1,0 +1,91 @@
+%% Diagrama de Casos de Uso General — Insane Barber
+%% Sistema Web de Gestión para Barbería
+
+graph LR
+    Admin((Administrador))
+    Recep((Recepcionista))
+    Barbero((Barbero))
+
+    subgraph Sistema Insane Barber
+        UC1[Iniciar sesión]
+        UC2[Gestionar usuarios]
+        UC3[Registrar cliente]
+        UC4[Editar cliente]
+        UC5[Registrar servicio]
+        UC6[Editar servicio]
+        UC7[Registrar promoción]
+        UC8[Registrar descuento]
+        UC9[Registrar reclamo]
+        UC10[Agendar turno]
+        UC11[Confirmar turno]
+        UC12[Cancelar turno]
+        UC13[Reagendar turno]
+        UC14[Asignar barbero]
+        UC15[Registrar atención]
+        UC16[Registrar cobro]
+        UC17[Abrir caja]
+        UC18[Cerrar caja]
+        UC19[Ver reportes]
+        UC20[Registrar presupuesto]
+        UC21[Registrar insumos utilizados]
+        UC22[Dar seguimiento a reclamo]
+        UC23[Emitir nota de crédito/débito]
+        UC24[Consultar libro de ventas]
+        UC25[Generar comprobante de pago]
+        UC26[Generar recaudaciones a depositar]
+        UC27[Gestionar recordatorio de turno]
+        UC28[Registrar proveedor]
+        UC29[Crear orden de compra]
+        UC30[Aprobar orden de compra]
+        UC31[Recibir mercadería]
+        UC32[Consultar libro de compras]
+        UC33[Registrar ajuste de compra]
+        UC34[Emitir nota C/D compra]
+        UC35[Generar nota de remisión venta]
+        UC36[Descargar informe PDF]
+    end
+
+    Admin --- UC1
+    Admin --- UC2
+    Admin --- UC5
+    Admin --- UC6
+    Admin --- UC7
+    Admin --- UC8
+    Admin --- UC17
+    Admin --- UC18
+    Admin --- UC19
+    Admin --- UC23
+    Admin --- UC24
+    Admin --- UC26
+    Admin --- UC28
+    Admin --- UC29
+    Admin --- UC30
+    Admin --- UC31
+    Admin --- UC32
+    Admin --- UC33
+    Admin --- UC34
+    Admin --- UC36
+
+    Recep --- UC1
+    Recep --- UC3
+    Recep --- UC4
+    Recep --- UC9
+    Recep --- UC10
+    Recep --- UC11
+    Recep --- UC12
+    Recep --- UC13
+    Recep --- UC14
+    Recep --- UC16
+    Recep --- UC17
+    Recep --- UC18
+    Recep --- UC20
+    Recep --- UC22
+    Recep --- UC25
+    Recep --- UC27
+    Recep --- UC35
+    Recep --- UC36
+
+    Barbero --- UC1
+    Barbero --- UC15
+    Barbero --- UC11
+    Barbero --- UC21

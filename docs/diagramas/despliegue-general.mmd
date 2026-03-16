@@ -1,0 +1,29 @@
+%% Diagrama de Despliegue — Insane Barber
+
+graph TB
+    subgraph "Dispositivo del Usuario"
+        NAV["Navegador Web<br/>(Chrome / Firefox)"]
+    end
+
+    subgraph "Servidor de Aplicación"
+        subgraph "Frontend"
+            FE["Aplicación Web<br/>(Next.js / React / Tailwind CSS)"]
+        end
+
+        subgraph "Backend"
+            API["API REST<br/>(Node.js / Express / Prisma)"]
+        end
+    end
+
+    subgraph "Servidor de Base de Datos"
+        DB[("PostgreSQL<br/>Base de Datos")]
+    end
+
+    subgraph "Servicios Externos"
+        DPAGO["Pasarela de Pagos<br/>(API Dpago)"]
+    end
+
+    NAV -- "HTTP/HTTPS" --> FE
+    FE -- "API REST<br/>(JSON)" --> API
+    API -- "TCP/IP<br/>(Puerto 5432)" --> DB
+    API -- "HTTPS<br/>(API REST)" --> DPAGO

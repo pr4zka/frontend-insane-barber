@@ -1,0 +1,36 @@
+%% Casos de Uso — Módulo 2: Agenda y Clientes
+
+graph LR
+    Admin((Administrador))
+    Recep((Recepcionista))
+    Barbero((Barbero))
+
+    subgraph "Módulo 2 — Agenda y Clientes"
+        UC1[Registrar cliente]
+        UC2[Editar cliente]
+        UC3[Agendar turno]
+        UC4[Confirmar turno]
+        UC5[Cancelar turno]
+        UC6[Reagendar turno]
+        UC7[Asignar barbero]
+        UC8[Ver historial de servicios]
+        UC9[Gestionar recordatorio de turno]
+        UC10[Ver informes de agenda]
+    end
+
+    Admin --- UC10
+    Admin --- UC7
+
+    Recep --- UC1
+    Recep --- UC2
+    Recep --- UC3
+    Recep --- UC4
+    Recep --- UC5
+    Recep --- UC6
+    Recep --- UC7
+    Recep --- UC8
+    Recep --- UC9
+    Recep --- UC10
+
+    Barbero --- UC4
+    Barbero --- UC8

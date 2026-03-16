@@ -1,0 +1,36 @@
+@startuml Casos de Uso - Módulo 4: Compras
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Administrador" as Admin
+
+rectangle "Módulo 4 — Compras" {
+    usecase "Registrar proveedor" as UC1
+    usecase "Editar proveedor" as UC2
+    usecase "Crear orden de compra" as UC3
+    usecase "Aprobar orden de compra" as UC4
+    usecase "Cancelar orden de compra" as UC5
+    usecase "Recibir mercadería" as UC6
+    usecase "Consultar libro de compras" as UC7
+    usecase "Ver notas de remisión" as UC8
+    usecase "Emitir nota C/D compra" as UC9
+    usecase "Anular nota C/D compra" as UC10
+    usecase "Registrar ajuste de compra" as UC11
+    usecase "Descargar informe PDF" as UC12
+}
+
+Admin -- UC1
+Admin -- UC2
+Admin -- UC3
+Admin -- UC4
+Admin -- UC5
+Admin -- UC6
+Admin -- UC7
+Admin -- UC8
+Admin -- UC9
+Admin -- UC10
+Admin -- UC11
+Admin -- UC12
+
+@enduml

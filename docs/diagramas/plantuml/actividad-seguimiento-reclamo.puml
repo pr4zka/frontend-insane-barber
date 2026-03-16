@@ -1,0 +1,21 @@
+@startuml Actividad - Seguimiento de Reclamo
+
+start
+:Buscar reclamo;
+:Ver historial de seguimiento;
+:Agregar comentario de seguimiento;
+
+if (¿Cambiar estado?) then (Sí)
+    if (Seleccionar nuevo estado) then (En proceso)
+        :Registrar cambio a en_proceso;
+    else (Resuelto)
+        :Registrar cambio a resuelto;
+    endif
+endif
+
+:Guardar seguimiento;
+:Notificar al cliente;
+
+stop
+
+@enduml

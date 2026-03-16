@@ -1,0 +1,22 @@
+%% Diagrama de Secuencia — Registrar Turno
+
+sequenceDiagram
+    actor Usuario
+    participant Frontend
+    participant Backend
+    participant PostgreSQL
+
+    Usuario->>Frontend: Selecciona cliente y servicio
+    Frontend->>Backend: POST /api/turnos {clienteId, servicioId, barberoId, fecha, hora}
+    Backend->>PostgreSQL: SELECT disponibilidad del barbero en fecha/hora
+    PostgreSQL-->>Backend: Resultado disponibilidad
+
+    alt Horario no disponible
+        Backend-->>Frontend: 409 Conflict - Horario no disponible
+        Frontend-->>Usuario: Muestra error "Horario no disponible"
+    else Horario disponible
+        Backend->>PostgreSQL: INSERT INTO turnos (...)
+        PostgreSQL-->>Backend: Turno creado (id)
+        Backend-->>Frontend: 201 Created {turno}
+        Frontend-->>Usuario: Muestra confirmación del turno
+    end

@@ -1,0 +1,18 @@
+%% Diagrama de Actividad — Flujo de Orden de Compra
+
+graph TD
+    A([Inicio]) --> B[Seleccionar proveedor]
+    B --> C[Agregar insumos al pedido]
+    C --> D[Definir cantidades y precios]
+    D --> E[Guardar orden de compra]
+    E --> F{Estado: Pendiente}
+    F -->|Aprobar| G[Cambiar estado a Aprobada]
+    F -->|Cancelar| H[Cambiar estado a Cancelada]
+    H --> Z([Fin])
+    G --> I{Recibir mercadería?}
+    I -->|Sí| J[Actualizar stock de insumos]
+    J --> K[Registrar en Libro de Compras]
+    K --> L[Generar Nota de Remisión]
+    L --> M[Cambiar estado a Recibida]
+    M --> Z
+    I -->|No| I

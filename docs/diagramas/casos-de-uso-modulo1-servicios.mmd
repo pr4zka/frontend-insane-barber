@@ -1,0 +1,43 @@
+%% Casos de Uso — Módulo 1: Gestión de Servicios
+
+graph LR
+    Admin((Administrador))
+    Recep((Recepcionista))
+    Barbero((Barbero))
+
+    subgraph "Módulo 1 — Gestión de Servicios"
+        UC1[Registrar servicio]
+        UC2[Editar servicio]
+        UC3[Registrar categoría]
+        UC4[Definir precio]
+        UC5[Definir duración]
+        UC6[Registrar promoción]
+        UC7[Registrar descuento]
+        UC8[Registrar reclamo]
+        UC9[Dar seguimiento a reclamo]
+        UC10[Crear orden de servicio]
+        UC11[Registrar presupuesto]
+        UC12[Imprimir presupuesto]
+        UC13[Registrar insumo]
+        UC14[Registrar insumos utilizados]
+        UC15[Ver informes de servicios]
+    end
+
+    Admin --- UC1
+    Admin --- UC2
+    Admin --- UC3
+    Admin --- UC4
+    Admin --- UC5
+    Admin --- UC6
+    Admin --- UC7
+    Admin --- UC13
+    Admin --- UC15
+
+    Recep --- UC8
+    Recep --- UC9
+    Recep --- UC10
+    Recep --- UC11
+    Recep --- UC12
+    Recep --- UC15
+
+    Barbero --- UC14

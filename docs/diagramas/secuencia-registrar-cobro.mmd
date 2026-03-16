@@ -1,0 +1,52 @@
+%% Diagrama de Secuencia — Registrar Cobro
+
+sequenceDiagram
+    actor Usuario
+    participant Frontend
+    participant Backend
+    participant Dpago
+    participant PostgreSQL
+
+    Usuario->>Frontend: Selecciona turno atendido
+    Frontend->>Backend: GET /api/turnos/:id
+    Backend->>PostgreSQL: SELECT turno con servicio y precio
+    PostgreSQL-->>Backend: Datos del turno y monto
+    Backend-->>Frontend: 200 OK {turno, monto}
+    Frontend-->>Usuario: Muestra detalle y monto
+
+    Usuario->>Frontend: Confirma cobro y método de pago
+    Frontend->>Backend: POST /api/pagos {turnoId, metodoPago, monto}
+
+    Backend->>PostgreSQL: SELECT estado de caja abierta
+    PostgreSQL-->>Backend: Caja activa
+
+    alt No hay caja abierta
+        Backend-->>Frontend: 400 Bad Request - No hay caja abierta
+        Frontend-->>Usuario: Muestra error "Debe abrir caja primero"
+    else Pago en efectivo
+        Backend->>PostgreSQL: BEGIN TRANSACTION
+        Backend->>PostgreSQL: INSERT INTO pagos (...)
+        Backend->>PostgreSQL: INSERT INTO movimientos_caja (...)
+        Backend->>PostgreSQL: INSERT INTO libro_ventas (...)
+        Backend->>PostgreSQL: UPDATE turnos SET estado = 'cobrado'
+        Backend->>PostgreSQL: COMMIT
+        Backend-->>Frontend: 201 Created {pago, comprobante}
+        Frontend-->>Usuario: Muestra comprobante de pago PDF
+    else Pago con Dpago
+        Backend->>Dpago: POST /transactions {amount, reference, token...}
+        Dpago-->>Backend: {reference, redirectUrl}
+        Backend->>PostgreSQL: INSERT INTO pagos (estado='pendiente', dpago_ref)
+        Backend-->>Frontend: 200 OK {redirectUrl}
+        Frontend-->>Usuario: Redirige a pasarela Dpago
+        Note over Usuario, Dpago: Cliente completa pago en Dpago
+        Backend->>Dpago: GET /transactions/:reference
+        Dpago-->>Backend: {status: 'completed'}
+        Backend->>PostgreSQL: BEGIN TRANSACTION
+        Backend->>PostgreSQL: UPDATE pagos SET estado = 'completado'
+        Backend->>PostgreSQL: INSERT INTO movimientos_caja (...)
+        Backend->>PostgreSQL: INSERT INTO libro_ventas (...)
+        Backend->>PostgreSQL: UPDATE turnos SET estado = 'cobrado'
+        Backend->>PostgreSQL: COMMIT
+        Backend-->>Frontend: 200 OK {pago, comprobante}
+        Frontend-->>Usuario: Muestra comprobante de pago PDF
+    end

@@ -1,0 +1,272 @@
+%% Modelo Entidad-Relación — Insane Barber (PostgreSQL)
+
+erDiagram
+    roles {
+        int id PK
+        varchar nombre
+    }
+
+    usuarios {
+        int id PK
+        varchar nombre
+        varchar email
+        varchar password
+        int rol_id FK
+        boolean estado
+    }
+
+    clientes {
+        int id PK
+        varchar nombre
+        varchar telefono
+        varchar email
+        datetime fecha_registro
+    }
+
+    barberos {
+        int id PK
+        varchar nombre
+        varchar telefono
+        varchar especialidad
+        boolean estado
+    }
+
+    servicios {
+        int id PK
+        varchar nombre
+        varchar descripcion
+        decimal precio
+        int duracion_min
+        boolean estado
+    }
+
+    turnos {
+        int id PK
+        int cliente_id FK
+        int barbero_id FK
+        int servicio_id FK
+        date fecha
+        time hora
+        varchar estado
+        varchar observacion
+    }
+
+    promociones {
+        int id PK
+        varchar nombre
+        varchar descripcion
+        decimal porcentaje
+        date fecha_inicio
+        date fecha_fin
+        boolean estado
+    }
+
+    reclamos {
+        int id PK
+        int cliente_id FK
+        varchar descripcion
+        datetime fecha
+        varchar estado
+    }
+
+    seguimientos_reclamo {
+        int id PK
+        int reclamo_id FK
+        varchar comentario
+        varchar estado_anterior
+        varchar estado_nuevo
+        datetime fecha
+    }
+
+    presupuestos {
+        int id PK
+        int cliente_id FK
+        datetime fecha
+        decimal total
+        varchar estado
+        varchar observacion
+    }
+
+    detalles_presupuesto {
+        int id PK
+        int presupuesto_id FK
+        int servicio_id FK
+        int cantidad
+        decimal precio_unitario
+        decimal subtotal
+    }
+
+    insumos {
+        int id PK
+        varchar nombre
+        varchar descripcion
+        varchar unidad
+        decimal stock
+        boolean estado
+    }
+
+    insumos_utilizados {
+        int id PK
+        int turno_id FK
+        int insumo_id FK
+        decimal cantidad
+        datetime fecha
+    }
+
+    cajas {
+        int id PK
+        int usuario_id FK
+        datetime fecha_apertura
+        datetime fecha_cierre
+        decimal monto_inicial
+        decimal monto_final
+        varchar estado
+    }
+
+    movimientos_caja {
+        int id PK
+        int caja_id FK
+        varchar tipo
+        varchar concepto
+        decimal monto
+        datetime fecha
+    }
+
+    pagos {
+        int id PK
+        int turno_id FK
+        varchar metodo_pago
+        decimal monto
+        decimal monto_original
+        int promocion_id FK
+        int descuento_id FK
+        decimal porcentaje_aplicado
+        varchar dpago_ref
+        varchar estado
+        datetime fecha
+    }
+
+    notas_credito_debito {
+        int id PK
+        int pago_id FK
+        varchar tipo
+        decimal monto
+        varchar motivo
+        varchar estado
+        datetime fecha
+    }
+
+    libro_ventas {
+        int id PK
+        int pago_id FK
+        datetime fecha
+        varchar concepto
+        decimal monto
+        varchar metodo_pago
+    }
+
+    descuentos {
+        int id PK
+        varchar nombre
+        varchar descripcion
+        decimal porcentaje
+        boolean estado
+    }
+
+    notas_remision_venta {
+        int id PK
+        int turno_id FK
+        datetime fecha
+        varchar observacion
+    }
+
+    proveedores {
+        int id PK
+        varchar nombre
+        varchar ruc
+        varchar telefono
+        varchar email
+        varchar direccion
+        boolean estado
+    }
+
+    ordenes_compra {
+        int id PK
+        int proveedor_id FK
+        datetime fecha
+        varchar estado
+        decimal total
+        varchar observacion
+    }
+
+    detalles_orden_compra {
+        int id PK
+        int orden_compra_id FK
+        int insumo_id FK
+        decimal cantidad
+        decimal precio_unitario
+        decimal subtotal
+    }
+
+    libro_compras {
+        int id PK
+        int orden_compra_id FK
+        datetime fecha
+        varchar concepto
+        decimal monto
+        varchar proveedor
+    }
+
+    notas_remision {
+        int id PK
+        int orden_compra_id FK
+        datetime fecha
+        varchar observacion
+    }
+
+    notas_cd_compra {
+        int id PK
+        int orden_compra_id FK
+        varchar tipo
+        decimal monto
+        varchar motivo
+        varchar estado
+        datetime fecha
+    }
+
+    ajustes_compra {
+        int id PK
+        int orden_compra_id FK
+        varchar tipo
+        varchar descripcion
+        decimal monto_anterior
+        decimal monto_nuevo
+        datetime fecha
+    }
+
+    roles ||--o{ usuarios : "tiene"
+    clientes ||--o{ turnos : "agenda"
+    barberos ||--o{ turnos : "atiende"
+    servicios ||--o{ turnos : "se aplica en"
+    clientes ||--o{ reclamos : "realiza"
+    reclamos ||--o{ seguimientos_reclamo : "tiene seguimiento"
+    clientes ||--o{ presupuestos : "solicita"
+    presupuestos ||--o{ detalles_presupuesto : "contiene"
+    servicios ||--o{ detalles_presupuesto : "se presupuesta en"
+    turnos ||--o{ insumos_utilizados : "consume"
+    insumos ||--o{ insumos_utilizados : "se usa en"
+    usuarios ||--o{ cajas : "opera"
+    cajas ||--o{ movimientos_caja : "registra"
+    turnos ||--o| pagos : "genera"
+    promociones ||--o{ pagos : "se aplica en"
+    descuentos ||--o{ pagos : "se aplica en"
+    pagos ||--o{ notas_credito_debito : "puede tener"
+    pagos ||--|| libro_ventas : "se registra en"
+    turnos ||--o| notas_remision_venta : "genera"
+    proveedores ||--o{ ordenes_compra : "recibe"
+    ordenes_compra ||--o{ detalles_orden_compra : "contiene"
+    insumos ||--o{ detalles_orden_compra : "se compra en"
+    ordenes_compra ||--o| libro_compras : "se registra en"
+    ordenes_compra ||--o| notas_remision : "genera"
+    ordenes_compra ||--o{ notas_cd_compra : "puede tener"
+    ordenes_compra ||--o{ ajustes_compra : "puede tener"

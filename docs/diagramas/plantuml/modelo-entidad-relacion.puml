@@ -1,0 +1,300 @@
+@startuml Modelo Entidad-Relación - Insane Barber (PostgreSQL)
+
+entity "roles" as roles {
+    * id : int <<PK>>
+    --
+    nombre : varchar
+}
+
+entity "usuarios" as usuarios {
+    * id : int <<PK>>
+    --
+    nombre : varchar
+    email : varchar
+    password : varchar
+    rol_id : int <<FK>>
+    estado : boolean
+}
+
+entity "clientes" as clientes {
+    * id : int <<PK>>
+    --
+    nombre : varchar
+    telefono : varchar
+    email : varchar
+    fecha_registro : datetime
+}
+
+entity "barberos" as barberos {
+    * id : int <<PK>>
+    --
+    nombre : varchar
+    telefono : varchar
+    especialidad : varchar
+    estado : boolean
+}
+
+entity "servicios" as servicios {
+    * id : int <<PK>>
+    --
+    nombre : varchar
+    descripcion : varchar
+    precio : decimal
+    duracion_min : int
+    estado : boolean
+}
+
+entity "turnos" as turnos {
+    * id : int <<PK>>
+    --
+    cliente_id : int <<FK>>
+    barbero_id : int <<FK>>
+    servicio_id : int <<FK>>
+    fecha : date
+    hora : time
+    estado : varchar
+    observacion : varchar
+}
+
+entity "promociones" as promociones {
+    * id : int <<PK>>
+    --
+    nombre : varchar
+    descripcion : varchar
+    porcentaje : decimal
+    fecha_inicio : date
+    fecha_fin : date
+    estado : boolean
+}
+
+entity "reclamos" as reclamos {
+    * id : int <<PK>>
+    --
+    cliente_id : int <<FK>>
+    descripcion : varchar
+    fecha : datetime
+    estado : varchar
+}
+
+entity "seguimientos_reclamo" as seguimientos_reclamo {
+    * id : int <<PK>>
+    --
+    reclamo_id : int <<FK>>
+    comentario : varchar
+    estado_anterior : varchar
+    estado_nuevo : varchar
+    fecha : datetime
+}
+
+entity "presupuestos" as presupuestos {
+    * id : int <<PK>>
+    --
+    cliente_id : int <<FK>>
+    fecha : datetime
+    total : decimal
+    estado : varchar
+    observacion : varchar
+}
+
+entity "detalles_presupuesto" as detalles_presupuesto {
+    * id : int <<PK>>
+    --
+    presupuesto_id : int <<FK>>
+    servicio_id : int <<FK>>
+    cantidad : int
+    precio_unitario : decimal
+    subtotal : decimal
+}
+
+entity "insumos" as insumos {
+    * id : int <<PK>>
+    --
+    nombre : varchar
+    descripcion : varchar
+    unidad : varchar
+    stock : decimal
+    estado : boolean
+}
+
+entity "insumos_utilizados" as insumos_utilizados {
+    * id : int <<PK>>
+    --
+    turno_id : int <<FK>>
+    insumo_id : int <<FK>>
+    cantidad : decimal
+    fecha : datetime
+}
+
+entity "cajas" as cajas {
+    * id : int <<PK>>
+    --
+    usuario_id : int <<FK>>
+    fecha_apertura : datetime
+    fecha_cierre : datetime
+    monto_inicial : decimal
+    monto_final : decimal
+    estado : varchar
+}
+
+entity "movimientos_caja" as movimientos_caja {
+    * id : int <<PK>>
+    --
+    caja_id : int <<FK>>
+    tipo : varchar
+    concepto : varchar
+    monto : decimal
+    fecha : datetime
+}
+
+entity "pagos" as pagos {
+    * id : int <<PK>>
+    --
+    turno_id : int <<FK>>
+    metodo_pago : varchar
+    monto : decimal
+    monto_original : decimal
+    promocion_id : int <<FK>>
+    descuento_id : int <<FK>>
+    porcentaje_aplicado : decimal
+    dpago_ref : varchar
+    estado : varchar
+    fecha : datetime
+}
+
+entity "notas_credito_debito" as notas_credito_debito {
+    * id : int <<PK>>
+    --
+    pago_id : int <<FK>>
+    tipo : varchar
+    monto : decimal
+    motivo : varchar
+    estado : varchar
+    fecha : datetime
+}
+
+entity "libro_ventas" as libro_ventas {
+    * id : int <<PK>>
+    --
+    pago_id : int <<FK>>
+    fecha : datetime
+    concepto : varchar
+    monto : decimal
+    metodo_pago : varchar
+}
+
+entity "descuentos" as descuentos {
+    * id : int <<PK>>
+    --
+    nombre : varchar
+    descripcion : varchar
+    porcentaje : decimal
+    estado : boolean
+}
+
+entity "notas_remision_venta" as notas_remision_venta {
+    * id : int <<PK>>
+    --
+    turno_id : int <<FK>>
+    fecha : datetime
+    observacion : varchar
+}
+
+entity "proveedores" as proveedores {
+    * id : int <<PK>>
+    --
+    nombre : varchar
+    ruc : varchar
+    telefono : varchar
+    email : varchar
+    direccion : varchar
+    estado : boolean
+}
+
+entity "ordenes_compra" as ordenes_compra {
+    * id : int <<PK>>
+    --
+    proveedor_id : int <<FK>>
+    fecha : datetime
+    estado : varchar
+    total : decimal
+    observacion : varchar
+}
+
+entity "detalles_orden_compra" as detalles_orden_compra {
+    * id : int <<PK>>
+    --
+    orden_compra_id : int <<FK>>
+    insumo_id : int <<FK>>
+    cantidad : decimal
+    precio_unitario : decimal
+    subtotal : decimal
+}
+
+entity "libro_compras" as libro_compras {
+    * id : int <<PK>>
+    --
+    orden_compra_id : int <<FK>>
+    fecha : datetime
+    concepto : varchar
+    monto : decimal
+    proveedor : varchar
+}
+
+entity "notas_remision" as notas_remision {
+    * id : int <<PK>>
+    --
+    orden_compra_id : int <<FK>>
+    fecha : datetime
+    observacion : varchar
+}
+
+entity "notas_cd_compra" as notas_cd_compra {
+    * id : int <<PK>>
+    --
+    orden_compra_id : int <<FK>>
+    tipo : varchar
+    monto : decimal
+    motivo : varchar
+    estado : varchar
+    fecha : datetime
+}
+
+entity "ajustes_compra" as ajustes_compra {
+    * id : int <<PK>>
+    --
+    orden_compra_id : int <<FK>>
+    tipo : varchar
+    descripcion : varchar
+    monto_anterior : decimal
+    monto_nuevo : decimal
+    fecha : datetime
+}
+
+roles ||--o{ usuarios : "tiene"
+clientes ||--o{ turnos : "agenda"
+barberos ||--o{ turnos : "atiende"
+servicios ||--o{ turnos : "se aplica en"
+clientes ||--o{ reclamos : "realiza"
+reclamos ||--o{ seguimientos_reclamo : "tiene seguimiento"
+clientes ||--o{ presupuestos : "solicita"
+presupuestos ||--o{ detalles_presupuesto : "contiene"
+servicios ||--o{ detalles_presupuesto : "se presupuesta en"
+turnos ||--o{ insumos_utilizados : "consume"
+insumos ||--o{ insumos_utilizados : "se usa en"
+usuarios ||--o{ cajas : "opera"
+cajas ||--o{ movimientos_caja : "registra"
+turnos ||--o| pagos : "genera"
+promociones ||--o{ pagos : "se aplica en"
+descuentos ||--o{ pagos : "se aplica en"
+pagos ||--o{ notas_credito_debito : "puede tener"
+pagos ||--|| libro_ventas : "se registra en"
+turnos ||--o| notas_remision_venta : "genera"
+proveedores ||--o{ ordenes_compra : "recibe"
+ordenes_compra ||--o{ detalles_orden_compra : "contiene"
+insumos ||--o{ detalles_orden_compra : "se compra en"
+ordenes_compra ||--o| libro_compras : "se registra en"
+ordenes_compra ||--o| notas_remision : "genera"
+ordenes_compra ||--o{ notas_cd_compra : "puede tener"
+ordenes_compra ||--o{ ajustes_compra : "puede tener"
+
+@enduml

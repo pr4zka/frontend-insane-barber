@@ -1,0 +1,45 @@
+%% Casos de Uso — Módulo 3: Caja y Ventas
+
+graph LR
+    Admin((Administrador))
+    Recep((Recepcionista))
+
+    subgraph "Módulo 3 — Caja y Ventas"
+        UC1[Abrir caja]
+        UC2[Cerrar caja]
+        UC3[Realizar arqueo]
+        UC4[Registrar cobro efectivo]
+        UC5[Registrar cobro Dpago]
+        UC6[Seleccionar método de pago]
+        UC7[Registrar movimiento de caja]
+        UC8[Generar comprobante de pago]
+        UC9[Consultar libro de ventas]
+        UC10[Emitir nota de crédito]
+        UC11[Emitir nota de débito]
+        UC12[Generar recaudaciones a depositar]
+        UC13[Gestionar cuentas a cobrar]
+        UC14[Ver reporte diario]
+        UC15[Ver reporte mensual]
+        UC16[Ver informes de caja]
+    end
+
+    Admin --- UC1
+    Admin --- UC2
+    Admin --- UC3
+    Admin --- UC9
+    Admin --- UC10
+    Admin --- UC11
+    Admin --- UC12
+    Admin --- UC13
+    Admin --- UC14
+    Admin --- UC15
+    Admin --- UC16
+
+    Recep --- UC1
+    Recep --- UC2
+    Recep --- UC4
+    Recep --- UC5
+    Recep --- UC6
+    Recep --- UC7
+    Recep --- UC8
+    Recep --- UC14

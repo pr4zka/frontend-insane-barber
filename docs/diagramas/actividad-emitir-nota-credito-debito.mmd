@@ -1,0 +1,20 @@
+%% Diagrama de Actividad — Emitir Nota de Crédito/Débito
+
+flowchart TD
+    A(("Inicio")) --> B["Buscar pago registrado"]
+    B --> C{"¿Pago encontrado?"}
+    C -- No --> D["Mostrar error: pago no encontrado"]
+    D --> Z(("Fin"))
+    C -- Sí --> E{"Seleccionar tipo de nota"}
+    E -- Nota de Crédito --> F["Ingresar monto a acreditar"]
+    E -- Nota de Débito --> G["Ingresar monto a debitar"]
+    F --> H["Ingresar motivo"]
+    G --> H
+    H --> I["Validar monto contra pago original"]
+    I --> J{"¿Monto válido?"}
+    J -- No --> K["Mostrar error: monto inválido"]
+    K --> Z
+    J -- Sí --> L["Registrar nota de crédito/débito"]
+    L --> M["Registrar movimiento en caja"]
+    M --> N["Actualizar libro de ventas"]
+    N --> Z

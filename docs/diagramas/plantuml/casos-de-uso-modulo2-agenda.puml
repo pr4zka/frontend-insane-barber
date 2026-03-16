@@ -1,0 +1,40 @@
+@startuml Casos de Uso - Módulo 2: Agenda y Clientes
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Administrador" as Admin
+actor "Recepcionista" as Recep
+actor "Barbero" as Barbero
+
+rectangle "Módulo 2 — Agenda y Clientes" {
+    usecase "Registrar cliente" as UC1
+    usecase "Editar cliente" as UC2
+    usecase "Agendar turno" as UC3
+    usecase "Confirmar turno" as UC4
+    usecase "Cancelar turno" as UC5
+    usecase "Reagendar turno" as UC6
+    usecase "Asignar barbero" as UC7
+    usecase "Ver historial de servicios" as UC8
+    usecase "Gestionar recordatorio de turno" as UC9
+    usecase "Ver informes de agenda" as UC10
+}
+
+Admin -- UC10
+Admin -- UC7
+
+Recep -- UC1
+Recep -- UC2
+Recep -- UC3
+Recep -- UC4
+Recep -- UC5
+Recep -- UC6
+Recep -- UC7
+Recep -- UC8
+Recep -- UC9
+Recep -- UC10
+
+Barbero -- UC4
+Barbero -- UC8
+
+@enduml

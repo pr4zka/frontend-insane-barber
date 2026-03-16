@@ -1,0 +1,15 @@
+%% Diagrama de Actividad — Seguimiento de Reclamo
+
+flowchart TD
+    A(("Inicio")) --> B["Buscar reclamo"]
+    B --> C["Ver historial de seguimiento"]
+    C --> D["Agregar comentario de seguimiento"]
+    D --> E{"¿Cambiar estado?"}
+    E -- No --> F["Guardar seguimiento"]
+    E -- Sí --> G{"Seleccionar nuevo estado"}
+    G -- En proceso --> H["Registrar cambio a en_proceso"]
+    G -- Resuelto --> I["Registrar cambio a resuelto"]
+    H --> F
+    I --> F
+    F --> J["Notificar al cliente"]
+    J --> Z(("Fin"))

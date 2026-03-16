@@ -1,0 +1,27 @@
+@startuml Actividad - Flujo de Orden de Compra
+
+start
+:Seleccionar proveedor;
+:Agregar insumos al pedido;
+:Definir cantidades y precios;
+:Guardar orden de compra;
+
+:Estado: Pendiente;
+
+if (¿Acción?) then (Aprobar)
+    :Cambiar estado a Aprobada;
+
+    while (¿Recibir mercadería?) is (No)
+    endwhile (Sí)
+
+    :Actualizar stock de insumos;
+    :Registrar en Libro de Compras;
+    :Generar Nota de Remisión;
+    :Cambiar estado a Recibida;
+else (Cancelar)
+    :Cambiar estado a Cancelada;
+endif
+
+stop
+
+@enduml

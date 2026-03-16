@@ -1,0 +1,66 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: insane_barber_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-insane_barber}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-insane_barber_2024}
+      POSTGRES_DB: ${DB_NAME:-insane_barber}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-insane_barber}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: insane_barber_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-insane_barber}:${DB_PASSWORD:-insane_barber_2024}@postgres:5432/${DB_NAME:-insane_barber}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-insane-barber-jwt-secret-key-2024}
+      PORT: 3000
+      DPAGO_API_URL: ${DPAGO_API_URL:-https://api.dpago.com}
+      DPAGO_PUBLIC_TOKEN: ${DPAGO_PUBLIC_TOKEN:-}
+      DPAGO_SECRET_TOKEN: ${DPAGO_SECRET_TOKEN:-}
+      DPAGO_COMMERCE_ID: ${DPAGO_COMMERCE_ID:-1}
+    expose:
+      - "3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api}
+    container_name: insane_barber_web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    expose:
+      - "3001"
+
+  nginx:
+    image: nginx:alpine
+    container_name: insane_barber_proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  postgres_data:

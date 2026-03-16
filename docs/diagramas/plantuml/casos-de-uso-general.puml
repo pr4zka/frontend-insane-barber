@@ -1,0 +1,94 @@
+@startuml Casos de Uso General - Insane Barber
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Administrador" as Admin
+actor "Recepcionista" as Recep
+actor "Barbero" as Barbero
+
+rectangle "Sistema Insane Barber" {
+    usecase "Iniciar sesión" as UC1
+    usecase "Gestionar usuarios" as UC2
+    usecase "Registrar cliente" as UC3
+    usecase "Editar cliente" as UC4
+    usecase "Registrar servicio" as UC5
+    usecase "Editar servicio" as UC6
+    usecase "Registrar promoción" as UC7
+    usecase "Registrar descuento" as UC8
+    usecase "Registrar reclamo" as UC9
+    usecase "Agendar turno" as UC10
+    usecase "Confirmar turno" as UC11
+    usecase "Cancelar turno" as UC12
+    usecase "Reagendar turno" as UC13
+    usecase "Asignar barbero" as UC14
+    usecase "Registrar atención" as UC15
+    usecase "Registrar cobro" as UC16
+    usecase "Abrir caja" as UC17
+    usecase "Cerrar caja" as UC18
+    usecase "Ver reportes" as UC19
+    usecase "Registrar presupuesto" as UC20
+    usecase "Registrar insumos utilizados" as UC21
+    usecase "Dar seguimiento a reclamo" as UC22
+    usecase "Emitir nota de crédito/débito" as UC23
+    usecase "Consultar libro de ventas" as UC24
+    usecase "Generar comprobante de pago" as UC25
+    usecase "Generar recaudaciones a depositar" as UC26
+    usecase "Gestionar recordatorio de turno" as UC27
+    usecase "Registrar proveedor" as UC28
+    usecase "Crear orden de compra" as UC29
+    usecase "Aprobar orden de compra" as UC30
+    usecase "Recibir mercadería" as UC31
+    usecase "Consultar libro de compras" as UC32
+    usecase "Registrar ajuste de compra" as UC33
+    usecase "Emitir nota C/D compra" as UC34
+    usecase "Generar nota de remisión venta" as UC35
+    usecase "Descargar informe PDF" as UC36
+}
+
+Admin -- UC1
+Admin -- UC2
+Admin -- UC5
+Admin -- UC6
+Admin -- UC7
+Admin -- UC8
+Admin -- UC17
+Admin -- UC18
+Admin -- UC19
+Admin -- UC23
+Admin -- UC24
+Admin -- UC26
+Admin -- UC28
+Admin -- UC29
+Admin -- UC30
+Admin -- UC31
+Admin -- UC32
+Admin -- UC33
+Admin -- UC34
+Admin -- UC36
+
+Recep -- UC1
+Recep -- UC3
+Recep -- UC4
+Recep -- UC9
+Recep -- UC10
+Recep -- UC11
+Recep -- UC12
+Recep -- UC13
+Recep -- UC14
+Recep -- UC16
+Recep -- UC17
+Recep -- UC18
+Recep -- UC20
+Recep -- UC22
+Recep -- UC25
+Recep -- UC27
+Recep -- UC35
+Recep -- UC36
+
+Barbero -- UC1
+Barbero -- UC15
+Barbero -- UC11
+Barbero -- UC21
+
+@enduml

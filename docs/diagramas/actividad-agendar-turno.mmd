@@ -1,0 +1,16 @@
+%% Diagrama de Actividad — Agendar Turno
+
+flowchart TD
+    A(("Inicio")) --> B["Buscar cliente"]
+    B --> C{"¿Cliente existe?"}
+    C -- No --> D["Registrar nuevo cliente"]
+    D --> E["Seleccionar servicio"]
+    C -- Sí --> E
+    E --> F["Verificar disponibilidad de horario"]
+    F --> G{"¿Horario disponible?"}
+    G -- No --> H["Seleccionar otro horario"]
+    H --> F
+    G -- Sí --> I["Asignar barbero"]
+    I --> J["Confirmar turno"]
+    J --> K["Guardar turno en el sistema"]
+    K --> L(("Fin"))

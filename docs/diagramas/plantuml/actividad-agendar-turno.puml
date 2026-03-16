@@ -1,0 +1,25 @@
+@startuml Actividad - Agendar Turno
+
+start
+:Buscar cliente;
+
+if (¿Cliente existe?) then (Sí)
+else (No)
+    :Registrar nuevo cliente;
+endif
+
+:Seleccionar servicio;
+:Verificar disponibilidad de horario;
+
+while (¿Horario disponible?) is (No)
+    :Seleccionar otro horario;
+    :Verificar disponibilidad de horario;
+endwhile (Sí)
+
+:Asignar barbero;
+:Confirmar turno;
+:Guardar turno en el sistema;
+
+stop
+
+@enduml

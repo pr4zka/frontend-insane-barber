@@ -1,0 +1,20 @@
+%% Diagrama de Actividad — Registrar Cobro
+
+flowchart TD
+    A(("Inicio")) --> B["Buscar turno atendido"]
+    B --> C["Verificar monto del servicio"]
+    C --> D{"¿Tiene descuento o promoción?"}
+    D -- Sí --> E["Aplicar descuento/promoción"]
+    E --> F["Calcular monto final"]
+    D -- No --> F
+    F --> G{"Seleccionar método de pago"}
+    G -- Efectivo --> H["Registrar cobro en efectivo"]
+    G -- Dpago --> I["Crear transacción en Dpago"]
+    I --> J{"¿Pago completado?"}
+    J -- No --> K["Registrar pago como pendiente"]
+    K --> Z(("Fin"))
+    J -- Sí --> H
+    H --> L["Registrar movimiento en caja"]
+    L --> M["Registrar en libro de ventas"]
+    M --> N["Generar comprobante de pago PDF"]
+    N --> Z

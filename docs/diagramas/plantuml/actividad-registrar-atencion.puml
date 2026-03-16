@@ -1,0 +1,24 @@
+@startuml Actividad - Registrar Atención
+
+start
+:Consultar turnos del día;
+:Seleccionar turno agendado;
+
+if (¿Cliente presente?) then (Sí)
+    :Iniciar atención;
+
+    repeat
+        :Realizar servicio;
+    repeat while (¿Servicio adicional?) is (Sí)
+    ->No;
+
+    :Registrar insumos utilizados;
+    :Marcar turno como atendido;
+    :Registrar observaciones;
+else (No)
+    :Marcar turno como ausente;
+endif
+
+stop
+
+@enduml

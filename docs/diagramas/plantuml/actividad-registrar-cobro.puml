@@ -1,0 +1,31 @@
+@startuml Actividad - Registrar Cobro
+
+start
+:Buscar turno atendido;
+:Verificar monto del servicio;
+
+if (¿Tiene descuento o promoción?) then (Sí)
+    :Aplicar descuento/promoción;
+endif
+
+:Calcular monto final;
+
+if (Seleccionar método de pago) then (Efectivo)
+    :Registrar cobro en efectivo;
+else (Dpago)
+    :Crear transacción en Dpago;
+    if (¿Pago completado?) then (Sí)
+        :Registrar cobro en efectivo;
+    else (No)
+        :Registrar pago como pendiente;
+        stop
+    endif
+endif
+
+:Registrar movimiento en caja;
+:Registrar en libro de ventas;
+:Generar comprobante de pago PDF;
+
+stop
+
+@enduml

@@ -1,0 +1,33 @@
+@startuml Secuencia - Crear y Recibir Orden de Compra
+
+actor "Administrador" as Admin
+participant "Frontend" as FE
+participant "API Backend" as API
+participant "PostgreSQL" as DB
+
+Admin -> FE : Crear orden de compra
+FE -> API : POST /purchases/orders
+API -> DB : Crear OrdenCompra + DetallesOrdenCompra
+DB --> API : Orden creada (estado: pendiente)
+API --> FE : Orden creada
+FE --> Admin : Muestra orden pendiente
+
+Admin -> FE : Aprobar orden
+FE -> API : PATCH /purchases/orders/:id/approve
+API -> DB : Actualizar estado a "aprobada"
+DB --> API : OK
+API --> FE : Orden aprobada
+FE --> Admin : Muestra orden aprobada
+
+Admin -> FE : Recibir mercadería
+FE -> API : PATCH /purchases/orders/:id/receive
+API -> DB : Iniciar transacción
+API -> DB : Actualizar stock de cada insumo
+API -> DB : Crear registro en LibroCompras
+API -> DB : Crear NotaRemision
+API -> DB : Actualizar estado a "recibida"
+DB --> API : Transacción completada
+API --> FE : Orden recibida
+FE --> Admin : Muestra orden recibida con libro y nota
+
+@enduml

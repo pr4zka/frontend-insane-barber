@@ -1,0 +1,33 @@
+@startuml Actividad - Apertura y Cierre de Caja
+
+start
+
+if (¿Operación?) then (Apertura)
+    :Verificar que no haya caja abierta;
+    if (¿Existe caja abierta?) then (Sí)
+        :Mostrar error: caja ya abierta;
+        stop
+    else (No)
+        :Ingresar monto inicial;
+        :Registrar apertura de caja;
+        :Caja abierta exitosamente;
+        stop
+    endif
+else (Cierre)
+    :Verificar que exista caja abierta;
+    if (¿Caja abierta?) then (No)
+        :Mostrar error: no hay caja abierta;
+        stop
+    else (Sí)
+        :Calcular monto final;
+        :Realizar arqueo;
+        if (¿Montos coinciden?) then (No)
+            :Registrar diferencia;
+        endif
+        :Registrar cierre de caja;
+        :Caja cerrada exitosamente;
+        stop
+    endif
+endif
+
+@enduml
