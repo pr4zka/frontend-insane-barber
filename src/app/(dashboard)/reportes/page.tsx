@@ -177,7 +177,7 @@ function IngresosTab() {
                 <TableRow key={i}>
                   <TableCell>{formatDate(row.fecha)}</TableCell>
                   <TableCell>{formatCurrency(Number(row.totalMonto))}</TableCell>
-                  <TableCell>{row.cantidadTurnosPagos}</TableCell>
+                  <TableCell>{row.cantidadPagos}</TableCell>
                 </TableRow>
               ))
             )}
