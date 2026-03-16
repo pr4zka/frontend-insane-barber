@@ -1,6 +1,12 @@
 node_modules
 .next
-.env
-.env.local
-*.md
 .git
+.github
+.claude
+docs
+*.pdf
+*.md
+.env*
+.DS_Store
+nginx
+scripts
