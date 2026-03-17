@@ -2,10 +2,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-console.log("[API Config] NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
-console.log("[API Config] Using API_URL:", API_URL);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.pr4zka.online/api";
 
 const api = axios.create({
   baseURL: API_URL,
