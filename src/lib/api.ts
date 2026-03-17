@@ -4,6 +4,9 @@ import { useAuth } from "@/hooks/use-auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
+console.log("[API Config] NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
+console.log("[API Config] Using API_URL:", API_URL);
+
 const api = axios.create({
   baseURL: API_URL,
   headers: {
