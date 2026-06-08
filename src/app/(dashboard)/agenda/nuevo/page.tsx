@@ -252,7 +252,7 @@ export default function NuevoTurnoPage() {
               <p className="text-xs text-destructive">{error}</p>
             )}
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex flex-wrap justify-end gap-2 pt-4">
               <Button type="button" variant="outline" asChild>
                 <Link href="/agenda">Cancelar</Link>
               </Button>

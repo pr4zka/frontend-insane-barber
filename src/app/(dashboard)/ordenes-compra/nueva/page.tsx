@@ -283,7 +283,7 @@ export default function NuevaOrdenCompraPage() {
 
         {error && <p className="text-xs text-destructive">{error}</p>}
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button type="submit" disabled={submitting}>
             {submitting ? "Guardando..." : "Guardar"}
           </Button>

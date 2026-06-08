@@ -96,7 +96,7 @@ export default function NuevoClientePage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex flex-wrap justify-end gap-2 pt-4">
               <Button type="button" variant="outline" asChild>
                 <Link href="/clientes">Cancelar</Link>
               </Button>

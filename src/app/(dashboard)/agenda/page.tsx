@@ -241,14 +241,14 @@ export default function AgendaPage() {
             type="date"
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
-            className="w-[180px]"
+            className="w-full sm:w-[180px]"
           />
         </div>
 
         <div className="space-y-2">
           <Label>Barbero</Label>
           <Select value={barberoFilter} onValueChange={setBarberoFilter}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Filtrar por barbero" />
             </SelectTrigger>
             <SelectContent>

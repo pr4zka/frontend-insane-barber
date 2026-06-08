@@ -286,7 +286,7 @@ export default function DetalleOrdenCompraPage({
       </Card>
 
       {orden.estado === "pendiente" && (
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button
             onClick={handleApprove}
             disabled={actionLoading}
@@ -304,7 +304,7 @@ export default function DetalleOrdenCompraPage({
       )}
 
       {orden.estado === "aprobada" && (
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button
             onClick={handleReceive}
             disabled={actionLoading}
