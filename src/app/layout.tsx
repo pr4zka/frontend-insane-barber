@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 
@@ -30,10 +31,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={cn(outfit.variable, jetbrainsMono.variable)}>
+    <html
+      lang="es"
+      className={cn(outfit.variable, jetbrainsMono.variable)}
+      suppressHydrationWarning
+    >
       <body className="font-sans antialiased">
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster richColors position="top-right" />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

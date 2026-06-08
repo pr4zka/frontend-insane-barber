@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { EnvelopeSimple, Lock } from "@phosphor-icons/react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,11 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen">
+      {/* Theme toggle */}
+      <div className="absolute right-4 top-4 z-20">
+        <ThemeToggle />
+      </div>
+
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center"
         style={{ background: "oklch(0.13 0.012 320)" }}

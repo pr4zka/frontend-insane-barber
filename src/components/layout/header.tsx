@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
 
 const routeLabels: Record<string, string> = {
@@ -55,8 +56,8 @@ export function Header() {
 
       <Separator orientation="vertical" className="mx-2 !h-4" />
 
-      <Breadcrumb className="flex-1">
-        <BreadcrumbList>
+      <Breadcrumb className="min-w-0 flex-1">
+        <BreadcrumbList className="flex-nowrap">
           {segments.map((segment, index) => {
             const label = routeLabels[segment] ?? segment;
             const isLast = index === segments.length - 1;
@@ -78,16 +79,19 @@ export function Header() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      {user && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground hidden sm:inline">
-            {user.nombre}
-          </span>
-          <Badge variant={badgeVariant} className="capitalize">
-            {roleName}
-          </Badge>
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        {user && (
+          <>
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              {user.nombre}
+            </span>
+            <Badge variant={badgeVariant} className="capitalize">
+              {roleName}
+            </Badge>
+          </>
+        )}
+      </div>
     </header>
   );
 }
