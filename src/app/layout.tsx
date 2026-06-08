@@ -19,10 +19,6 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "2K Barber Shop - Sistema de Gestion",
   description: "Sistema web de gestion para barberia 2K Barber Shop",
-  icons: {
-    icon: "/logo-2k.png",
-    apple: "/logo-2k.png",
-  },
 };
 
 export default function RootLayout({
