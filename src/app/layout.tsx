@@ -16,8 +16,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Insane Barber - Sistema de Gestion",
-  description: "Sistema web de gestion para barberia Insane Barber",
+  title: "2K Barber Shop - Sistema de Gestion",
+  description: "Sistema web de gestion para barberia 2K Barber Shop",
+  icons: {
+    icon: "/logo-2k.png",
+    apple: "/logo-2k.png",
+  },
 };
 
 export default function RootLayout({

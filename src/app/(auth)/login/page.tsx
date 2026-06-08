@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Scissors, EnvelopeSimple, Lock } from "@phosphor-icons/react";
+import { EnvelopeSimple, Lock } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,46 +38,46 @@ export default function LoginPage() {
     <div className="flex min-h-screen">
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center"
-        style={{ background: "oklch(0.2 0.04 265)" }}
+        style={{ background: "oklch(0.13 0.012 320)" }}
       >
         {/* Decorative grid */}
-        <div className="absolute inset-0 opacity-[0.04]"
+        <div className="absolute inset-0 opacity-[0.05]"
           style={{
-            backgroundImage: `radial-gradient(oklch(0.7 0.14 265) 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(oklch(0.63 0.24 356) 1px, transparent 1px)`,
             backgroundSize: "32px 32px",
           }}
+        />
+        {/* Pink glow */}
+        <div className="absolute -top-1/4 left-1/2 -translate-x-1/2 size-[36rem] rounded-full blur-3xl"
+          style={{ background: "oklch(0.63 0.24 356 / 12%)" }}
         />
 
         <div className="relative z-10 px-16 text-center">
           {/* Logo */}
-          <div className="mx-auto mb-10 flex size-24 items-center justify-center rounded-full border-2"
-            style={{
-              borderColor: "oklch(0.7 0.14 265)",
-              background: "oklch(0.7 0.14 265 / 8%)",
-            }}
-          >
-            <Scissors className="size-12" weight="bold" style={{ color: "oklch(0.7 0.14 265)" }} />
-          </div>
+          <Image
+            src="/logo-2k.png"
+            alt="2K Barber Shop"
+            width={340}
+            height={340}
+            priority
+            className="mx-auto mb-6 w-auto h-64 object-contain"
+            style={{ mixBlendMode: "screen" }}
+          />
 
-          <h1 className="text-5xl font-bold tracking-tight mb-3"
-            style={{ color: "oklch(0.96 0 0)" }}
-          >
-            Insane Barber
-          </h1>
-          <div className="w-16 h-0.5 mx-auto mb-6" style={{ background: "oklch(0.7 0.14 265)" }} />
+          <div className="w-16 h-0.5 mx-auto mb-6" style={{ background: "oklch(0.63 0.24 356)" }} />
           <p className="text-lg font-light tracking-wide"
-            style={{ color: "oklch(0.55 0.02 265)" }}
+            style={{ color: "oklch(0.6 0.02 320)" }}
           >
             Sistema de Gestion
           </p>
 
           {/* Decorative bottom */}
-          <div className="mt-20 flex items-center justify-center gap-3"
-            style={{ color: "oklch(0.35 0.015 265)" }}
+          <div className="mt-16 flex items-center justify-center gap-3"
+            style={{ color: "oklch(0.4 0.015 320)" }}
           >
-            <div className="h-px w-12" style={{ background: "oklch(0.35 0.015 265)" }} />
+            <div className="h-px w-12" style={{ background: "oklch(0.4 0.015 320)" }} />
             <span className="text-xs font-medium tracking-[0.2em] uppercase">IVAN MARTINEZ. 2026</span>
-            <div className="h-px w-12" style={{ background: "oklch(0.35 0.015 265)" }} />
+            <div className="h-px w-12" style={{ background: "oklch(0.4 0.015 320)" }} />
           </div>
         </div>
       </div>
@@ -86,10 +87,19 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-10">
-            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-primary/10">
-              <Scissors className="size-7 text-primary" weight="bold" />
+            <div className="mx-auto mb-3 flex size-24 items-center justify-center rounded-2xl"
+              style={{ background: "oklch(0.13 0.012 320)" }}
+            >
+              <Image
+                src="/logo-2k.png"
+                alt="2K Barber Shop"
+                width={120}
+                height={120}
+                priority
+                className="size-20 object-contain"
+                style={{ mixBlendMode: "screen" }}
+              />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Insane Barber</h1>
             <p className="text-sm text-muted-foreground mt-1">Sistema de Gestion</p>
           </div>
 
@@ -149,7 +159,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-xs text-muted-foreground/60 mt-10">
-            Insane Barber &copy; 2026
+            2K Barber Shop &copy; 2026
           </p>
         </div>
       </div>

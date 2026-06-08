@@ -28,7 +28,7 @@ export function generatePdf(options: PdfOptions) {
   // Header
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("Insane Barber", 14, 20);
+  doc.text("2K Barber Shop", 14, 20);
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
@@ -101,7 +101,7 @@ export function generatePdf(options: PdfOptions) {
       pageHeight - 10,
       { align: "right" }
     );
-    doc.text("Insane Barber - Informe Web", 14, pageHeight - 10);
+    doc.text("2K Barber Shop - Informe Web", 14, pageHeight - 10);
   }
 
   doc.save(`${filename}.pdf`);

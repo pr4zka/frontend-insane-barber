@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Scissors,
   House,
   Package,
   Tag,
@@ -118,11 +118,20 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Scissors className="size-4" weight="bold" />
+                <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-md"
+                  style={{ background: "oklch(0.13 0.012 320)" }}
+                >
+                  <Image
+                    src="/logo-2k.png"
+                    alt="2K Barber Shop"
+                    width={40}
+                    height={40}
+                    className="size-7 object-contain"
+                    style={{ mixBlendMode: "screen" }}
+                  />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-bold tracking-tight">Insane Barber</span>
+                  <span className="truncate font-bold tracking-tight">2K Barber Shop</span>
                   <span className="truncate text-xs text-sidebar-foreground/50">
                     Sistema de gestion
                   </span>

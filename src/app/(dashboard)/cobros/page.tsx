@@ -36,7 +36,7 @@ export default function CobrosPage() {
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
-    doc.text("Insane Barber", 105, 20, { align: "center" });
+    doc.text("2K Barber Shop", 105, 20, { align: "center" });
     doc.setFontSize(12);
     doc.text("Comprobante de Pago", 105, 28, { align: "center" });
     doc.setFontSize(10);
