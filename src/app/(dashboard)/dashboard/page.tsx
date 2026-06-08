@@ -9,6 +9,9 @@ import {
   CashRegister,
   UserCheck,
   Plus,
+  Receipt,
+  TrendUp,
+  Scales,
 } from "@phosphor-icons/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +26,8 @@ import { turnosService } from "@/services/turnos.service";
 import { clientesService } from "@/services/clientes.service";
 import { cajaService } from "@/services/caja.service";
 import { pagosService } from "@/services/pagos.service";
+import { libroComprasService } from "@/services/compras.service";
+import { libroVentasService } from "@/services/libro-ventas.service";
 import { formatCurrency } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -38,6 +43,7 @@ interface DashboardStats {
 export default function DashboardPage() {
   const { user } = useAuth();
   const isBarbero = user?.rol?.nombre === "barbero";
+  const isAdmin = user?.rol?.nombre === "administrador";
 
   const [stats, setStats] = useState<DashboardStats>({
     turnosHoy: 0,
@@ -45,6 +51,7 @@ export default function DashboardPage() {
     ingresosHoy: 0,
     cajaEstado: "cerrada",
   });
+  const [historico, setHistorico] = useState({ gastos: 0, ingresos: 0 });
   const [allTurnos, setAllTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -104,6 +111,23 @@ export default function DashboardPage() {
             ingresosHoy,
             cajaEstado: caja?.estado ?? "cerrada",
           });
+
+          // Resumen historico (solo administrador: el libro de compras es admin-only)
+          if (isAdmin) {
+            const [comprasRes, ventasRes] = await Promise.allSettled([
+              libroComprasService.getAll(),
+              libroVentasService.getAll(),
+            ]);
+            const compras =
+              comprasRes.status === "fulfilled" ? comprasRes.value.data : [];
+            const ventas =
+              ventasRes.status === "fulfilled" ? ventasRes.value.data : [];
+
+            setHistorico({
+              gastos: compras.reduce((sum, c) => sum + Number(c.monto), 0),
+              ingresos: ventas.reduce((sum, v) => sum + Number(v.monto), 0),
+            });
+          }
         }
       } catch {
         toast.error("Error al cargar datos del dashboard");
@@ -113,7 +137,7 @@ export default function DashboardPage() {
     }
 
     fetchData();
-  }, [isBarbero, user?.nombre]);
+  }, [isBarbero, isAdmin, user?.nombre]);
 
   // Filtrar turnos para el barbero
   const turnosRecientes = useMemo(() => {
@@ -177,6 +201,28 @@ export default function DashboardPage() {
           icon: CashRegister,
         },
       ];
+
+  const gananciaNeta = historico.ingresos - historico.gastos;
+  const historicoCards = [
+    {
+      title: "Gastos totales",
+      value: formatCurrency(historico.gastos),
+      icon: Receipt,
+      tone: "text-foreground",
+    },
+    {
+      title: "Ingresos totales",
+      value: formatCurrency(historico.ingresos),
+      icon: TrendUp,
+      tone: "text-foreground",
+    },
+    {
+      title: "Ganancia neta",
+      value: formatCurrency(gananciaNeta),
+      icon: Scales,
+      tone: gananciaNeta >= 0 ? "text-emerald-600" : "text-destructive",
+    },
+  ];
 
   const turnoColumns: DataTableColumn<Turno>[] = [
     {
@@ -254,6 +300,48 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Resumen Histórico (solo administrador) */}
+      {isAdmin && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Resumen histórico
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {historicoCards.map((card) => (
+              <Card key={card.title}>
+                <CardContent className="flex items-center gap-4">
+                  {loading ? (
+                    <>
+                      <Skeleton className="size-10" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-5 w-16" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex size-10 shrink-0 items-center justify-center bg-primary/10 text-primary">
+                        <card.icon className="size-5" weight="duotone" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground">
+                          {card.title}
+                        </p>
+                        <p
+                          className={`text-lg font-semibold tracking-tight ${card.tone}`}
+                        >
+                          {card.value}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <Card>

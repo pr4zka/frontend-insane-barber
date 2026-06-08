@@ -52,6 +52,51 @@ export const DPAGO_PLATAFORMAS = [
   { id: 9, nombre: "Pago Express" },
 ] as const;
 
+// Categorias fijas del Libro de Compras. La key se guarda en la base.
+export const CATEGORIAS_COMPRA = {
+  insumos: "Insumos de peluquería",
+  descartables: "Descartables",
+  cosmeticos: "Cosméticos y coloración",
+  limpieza: "Limpieza y desinfección",
+  equipos: "Equipos y herramientas",
+  gastos_fijos: "Gastos fijos (luz, agua, alquiler)",
+  otros: "Otros",
+} as const;
+
+export type CategoriaCompra = keyof typeof CATEGORIAS_COMPRA;
+
+export function categoriaCompraLabel(key: string): string {
+  return CATEGORIAS_COMPRA[key as CategoriaCompra] ?? CATEGORIAS_COMPRA.otros;
+}
+
+// Datos fiscales (SET Paraguay)
+export const TIPOS_COMPROBANTE = {
+  factura: "Factura",
+  ticket: "Ticket",
+  autofactura: "Autofactura",
+  nota_credito: "Nota de crédito",
+} as const;
+
+export function tipoComprobanteLabel(key: string): string {
+  return TIPOS_COMPROBANTE[key as keyof typeof TIPOS_COMPROBANTE] ?? key;
+}
+
+export const CONDICIONES_COMPRA = {
+  contado: "Contado",
+  credito: "Crédito",
+} as const;
+
+export function condicionCompraLabel(key: string): string {
+  return CONDICIONES_COMPRA[key as keyof typeof CONDICIONES_COMPRA] ?? key;
+}
+
+// Tasa de IVA. 0 = exento.
+export const TASAS_IVA = [
+  { value: 10, label: "IVA 10%" },
+  { value: 5, label: "IVA 5%" },
+  { value: 0, label: "Exento" },
+] as const;
+
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("es-PY", {
     style: "currency",

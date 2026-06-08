@@ -23,6 +23,13 @@ export const ordenesCompraService = {
   create: (data: {
     proveedorId: number;
     observacion?: string;
+    categoria?: string;
+    detalle?: string;
+    tipoComprobante?: string;
+    nroComprobante?: string;
+    timbrado?: string;
+    condicion?: string;
+    tasaIva?: number;
     detalles: { insumoId: number; cantidad: number; precioUnitario: number }[];
   }) => api.post<OrdenCompra>("/purchases/orders", data),
   approve: (id: number) =>
@@ -35,6 +42,19 @@ export const ordenesCompraService = {
 
 export const libroComprasService = {
   getAll: () => api.get<LibroCompras[]>("/purchases/ledger"),
+  update: (
+    id: number,
+    data: {
+      categoria?: string;
+      detalle?: string;
+      tipoComprobante?: string;
+      nroComprobante?: string;
+      timbrado?: string;
+      condicion?: string;
+      rucProveedor?: string;
+      tasaIva?: number;
+    }
+  ) => api.patch<LibroCompras>(`/purchases/ledger/${id}`, data),
 };
 
 export const notasRemisionService = {

@@ -285,6 +285,13 @@ export interface OrdenCompra {
   estado: OrdenCompraEstado;
   total: number;
   observacion: string;
+  categoria: string;
+  detalle: string;
+  tipoComprobante: string;
+  nroComprobante: string;
+  timbrado: string;
+  condicion: string;
+  tasaIva: number;
   proveedor?: Proveedor;
   detalles?: DetalleOrdenCompra[];
   libroCompras?: LibroCompras;
@@ -308,8 +315,21 @@ export interface LibroCompras {
   ordenCompraId: number;
   fecha: string;
   concepto: string;
+  categoria: string;
+  detalle: string;
   monto: number;
   proveedor: string;
+  rucProveedor: string;
+  tipoComprobante: string;
+  nroComprobante: string;
+  timbrado: string;
+  condicion: string;
+  tasaIva: number;
+  gravado10: number;
+  iva10: number;
+  gravado5: number;
+  iva5: number;
+  exento: number;
   ordenCompra?: OrdenCompra;
 }
 

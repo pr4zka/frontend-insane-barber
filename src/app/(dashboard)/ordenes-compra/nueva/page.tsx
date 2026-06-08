@@ -28,7 +28,13 @@ import {
 import { PageHeader } from "@/components/shared/page-header";
 import { ordenesCompraService, proveedoresService } from "@/services/compras.service";
 import { insumosService } from "@/services/insumos.service";
-import { formatCurrency } from "@/lib/constants";
+import {
+  formatCurrency,
+  CATEGORIAS_COMPRA,
+  TIPOS_COMPROBANTE,
+  CONDICIONES_COMPRA,
+  TASAS_IVA,
+} from "@/lib/constants";
 import type { Proveedor, Insumo } from "@/types";
 import { toast } from "sonner";
 
@@ -51,7 +57,15 @@ export default function NuevaOrdenCompraPage() {
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [proveedorId, setProveedorId] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [detalle, setDetalle] = useState("");
   const [observacion, setObservacion] = useState("");
+  // Datos fiscales
+  const [tipoComprobante, setTipoComprobante] = useState("factura");
+  const [nroComprobante, setNroComprobante] = useState("");
+  const [timbrado, setTimbrado] = useState("");
+  const [condicion, setCondicion] = useState("contado");
+  const [tasaIva, setTasaIva] = useState("10");
   const [detalles, setDetalles] = useState<DetalleRow[]>([{ ...EMPTY_DETALLE }]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -119,6 +133,11 @@ export default function NuevaOrdenCompraPage() {
       return;
     }
 
+    if (!categoria) {
+      setError("Seleccione una categoría para la compra.");
+      return;
+    }
+
     const validDetalles = detalles.filter(
       (d) => d.insumoId && Number(d.cantidad) > 0 && Number(d.precioUnitario) > 0
     );
@@ -132,7 +151,14 @@ export default function NuevaOrdenCompraPage() {
     try {
       await ordenesCompraService.create({
         proveedorId: Number(proveedorId),
+        categoria,
+        detalle: detalle.trim() || undefined,
         observacion: observacion.trim() || undefined,
+        tipoComprobante,
+        nroComprobante: nroComprobante.trim() || undefined,
+        timbrado: timbrado.trim() || undefined,
+        condicion,
+        tasaIva: Number(tasaIva),
         detalles: validDetalles.map((d) => ({
           insumoId: Number(d.insumoId),
           cantidad: Number(d.cantidad),
@@ -175,6 +201,32 @@ export default function NuevaOrdenCompraPage() {
             </div>
 
             <div className="space-y-2">
+              <Label>Categoría</Label>
+              <Select value={categoria} onValueChange={setCategoria}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccione una categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORIAS_COMPRA).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="detalle">Detalle (opcional)</Label>
+              <Input
+                id="detalle"
+                placeholder="Ej: shampoo, ceras y geles"
+                value={detalle}
+                onChange={(e) => setDetalle(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="observacion">Observacion</Label>
               <Textarea
                 id="observacion"
@@ -183,6 +235,81 @@ export default function NuevaOrdenCompraPage() {
                 onChange={(e) => setObservacion(e.target.value)}
                 rows={3}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="max-w-4xl">
+          <CardHeader>
+            <CardTitle>Datos fiscales</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Tipo de comprobante</Label>
+              <Select value={tipoComprobante} onValueChange={setTipoComprobante}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TIPOS_COMPROBANTE).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nroComprobante">N° de comprobante</Label>
+              <Input
+                id="nroComprobante"
+                placeholder="001-001-0001234"
+                value={nroComprobante}
+                onChange={(e) => setNroComprobante(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="timbrado">Timbrado</Label>
+              <Input
+                id="timbrado"
+                placeholder="12345678"
+                value={timbrado}
+                onChange={(e) => setTimbrado(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Condición</Label>
+              <Select value={condicion} onValueChange={setCondicion}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CONDICIONES_COMPRA).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>IVA</Label>
+              <Select value={tasaIva} onValueChange={setTasaIva}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TASAS_IVA.map((t) => (
+                    <SelectItem key={t.value} value={String(t.value)}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
