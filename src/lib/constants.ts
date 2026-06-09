@@ -97,6 +97,39 @@ export const TASAS_IVA = [
   { value: 0, label: "Exento" },
 ] as const;
 
+// Desglose de IVA (Paraguay). Los precios incluyen IVA; Total = Gravado + IVA.
+// Espejo de calcularIva() del backend, para que los informes salgan consistentes
+// incluso en registros viejos (cuyo desglose guardado puede estar en 0).
+export interface IvaBreakdown {
+  gravado10: number;
+  iva10: number;
+  gravado5: number;
+  iva5: number;
+  exento: number;
+}
+
+export function calcularIvaCompra(total: number, tasa: number): IvaBreakdown {
+  const b: IvaBreakdown = {
+    gravado10: 0,
+    iva10: 0,
+    gravado5: 0,
+    iva5: 0,
+    exento: 0,
+  };
+  if (tasa === 10) {
+    const gravado = Math.round(total / 1.1);
+    b.gravado10 = gravado;
+    b.iva10 = total - gravado;
+  } else if (tasa === 5) {
+    const gravado = Math.round(total / 1.05);
+    b.gravado5 = gravado;
+    b.iva5 = total - gravado;
+  } else {
+    b.exento = total;
+  }
+  return b;
+}
+
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("es-PY", {
     style: "currency",

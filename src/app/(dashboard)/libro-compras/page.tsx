@@ -35,6 +35,8 @@ import {
   CONDICIONES_COMPRA,
   TASAS_IVA,
   tipoComprobanteLabel,
+  calcularIvaCompra,
+  type IvaBreakdown,
 } from "@/lib/constants";
 
 import { toast } from "sonner";
@@ -124,8 +126,13 @@ export default function LibroComprasPage() {
         ? `Periodo: ${fechaDesde || "inicio"} - ${fechaHasta || "actual"}`
         : undefined;
 
-    const sum = (key: keyof LibroCompras) =>
-      filteredEntries.reduce((s, e) => s + Number(e[key] ?? 0), 0);
+    // El IVA se calcula desde monto + tasaIva (no se leen los campos guardados),
+    // para que el informe sea correcto y consistente en todos los registros.
+    const desglose = filteredEntries.map((e) =>
+      calcularIvaCompra(Number(e.monto), Number(e.tasaIva ?? 10))
+    );
+    const sumIva = (key: keyof IvaBreakdown) =>
+      desglose.reduce((s, b) => s + b[key], 0);
 
     generatePdf({
       title: "Libro de Compras",
@@ -143,24 +150,24 @@ export default function LibroComprasPage() {
         "Exento",
         "Total",
       ],
-      rows: filteredEntries.map((e) => [
+      rows: filteredEntries.map((e, i) => [
         formatDate(e.fecha),
         `${tipoComprobanteLabel(e.tipoComprobante)} ${e.nroComprobante}`.trim(),
         e.rucProveedor || "-",
         e.concepto,
-        formatCurrency(e.gravado10),
-        formatCurrency(e.iva10),
-        formatCurrency(e.gravado5),
-        formatCurrency(e.iva5),
-        formatCurrency(e.exento),
+        formatCurrency(desglose[i].gravado10),
+        formatCurrency(desglose[i].iva10),
+        formatCurrency(desglose[i].gravado5),
+        formatCurrency(desglose[i].iva5),
+        formatCurrency(desglose[i].exento),
         formatCurrency(e.monto),
       ]),
       totals: [
-        { label: "Gravado 10%", value: formatCurrency(sum("gravado10")) },
-        { label: "IVA 10%", value: formatCurrency(sum("iva10")) },
-        { label: "Gravado 5%", value: formatCurrency(sum("gravado5")) },
-        { label: "IVA 5%", value: formatCurrency(sum("iva5")) },
-        { label: "Exento", value: formatCurrency(sum("exento")) },
+        { label: "Gravado 10%", value: formatCurrency(sumIva("gravado10")) },
+        { label: "IVA 10%", value: formatCurrency(sumIva("iva10")) },
+        { label: "Gravado 5%", value: formatCurrency(sumIva("gravado5")) },
+        { label: "IVA 5%", value: formatCurrency(sumIva("iva5")) },
+        { label: "Exento", value: formatCurrency(sumIva("exento")) },
         { label: "Total", value: formatCurrency(totalSum) },
       ],
       filename: "libro-compras",
