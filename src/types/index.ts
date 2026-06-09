@@ -312,7 +312,7 @@ export interface DetalleOrdenCompra {
 
 export interface LibroCompras {
   id: number;
-  ordenCompraId: number;
+  ordenCompraId: number | null;
   fecha: string;
   concepto: string;
   categoria: string;

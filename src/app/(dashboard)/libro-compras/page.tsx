@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { FunnelSimple, FilePdf, PencilSimple } from "@phosphor-icons/react";
+import { FunnelSimple, FilePdf, PencilSimple, Plus } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,6 +58,26 @@ export default function LibroComprasPage() {
   const [editRuc, setEditRuc] = useState("");
   const [editTasaIva, setEditTasaIva] = useState("10");
   const [saving, setSaving] = useState(false);
+
+  // Registrar gasto directo (sin orden ni stock)
+  const emptyGasto = {
+    proveedor: "",
+    monto: "",
+    fecha: "",
+    categoria: "otros",
+    detalle: "",
+    tipoComprobante: "factura",
+    nroComprobante: "",
+    timbrado: "",
+    condicion: "contado",
+    rucProveedor: "",
+    tasaIva: "10",
+  };
+  const [creating, setCreating] = useState(false);
+  const [gasto, setGasto] = useState(emptyGasto);
+  const [savingGasto, setSavingGasto] = useState(false);
+  const setG = (key: keyof typeof emptyGasto, value: string) =>
+    setGasto((prev) => ({ ...prev, [key]: value }));
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
@@ -145,6 +165,37 @@ export default function LibroComprasPage() {
       ],
       filename: "libro-compras",
     });
+  };
+
+  const handleCreateExpense = async () => {
+    if (!gasto.proveedor.trim() || !Number(gasto.monto)) {
+      toast.error("Proveedor y monto son obligatorios.");
+      return;
+    }
+    setSavingGasto(true);
+    try {
+      await libroComprasService.createExpense({
+        proveedor: gasto.proveedor.trim(),
+        monto: Number(gasto.monto),
+        categoria: gasto.categoria,
+        detalle: gasto.detalle.trim() || undefined,
+        fecha: gasto.fecha || undefined,
+        tipoComprobante: gasto.tipoComprobante,
+        nroComprobante: gasto.nroComprobante.trim() || undefined,
+        timbrado: gasto.timbrado.trim() || undefined,
+        condicion: gasto.condicion,
+        rucProveedor: gasto.rucProveedor.trim() || undefined,
+        tasaIva: Number(gasto.tasaIva),
+      });
+      toast.success("Gasto registrado correctamente.");
+      setCreating(false);
+      setGasto(emptyGasto);
+      fetchEntries();
+    } catch {
+      toast.error("Error al registrar el gasto.");
+    } finally {
+      setSavingGasto(false);
+    }
   };
 
   const openEdit = (entry: LibroCompras) => {
@@ -250,6 +301,12 @@ export default function LibroComprasPage() {
       <PageHeader
         title="Libro de Compras"
         description="Registro de todas las compras realizadas"
+        action={
+          <Button size="sm" onClick={() => setCreating(true)}>
+            <Plus className="size-4" />
+            Registrar gasto
+          </Button>
+        }
       />
 
       {/* Filter Bar */}
@@ -435,6 +492,177 @@ export default function LibroComprasPage() {
             </Button>
             <Button onClick={handleSaveEdit} disabled={saving}>
               {saving ? "Guardando..." : "Guardar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Registrar gasto directo */}
+      <Dialog open={creating} onOpenChange={setCreating}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Registrar gasto</DialogTitle>
+            <DialogDescription>
+              Gasto o servicio sin orden de compra ni movimiento de stock (ej:
+              tapizado, mantenimiento, alquiler).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="gProveedor">Proveedor *</Label>
+                <Input
+                  id="gProveedor"
+                  placeholder="Tapicería López"
+                  value={gasto.proveedor}
+                  onChange={(e) => setG("proveedor", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gMonto">Monto * (Gs.)</Label>
+                <Input
+                  id="gMonto"
+                  type="number"
+                  min="0"
+                  placeholder="350000"
+                  value={gasto.monto}
+                  onChange={(e) => setG("monto", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Categoría</Label>
+                <Select
+                  value={gasto.categoria}
+                  onValueChange={(v) => setG("categoria", v)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CATEGORIAS_COMPRA).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gFecha">Fecha</Label>
+                <Input
+                  id="gFecha"
+                  type="date"
+                  value={gasto.fecha}
+                  onChange={(e) => setG("fecha", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gDetalle">Detalle (opcional)</Label>
+              <Input
+                id="gDetalle"
+                placeholder="Tapizado de sofá de espera"
+                value={gasto.detalle}
+                onChange={(e) => setG("detalle", e.target.value)}
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Tipo de comprobante</Label>
+                <Select
+                  value={gasto.tipoComprobante}
+                  onValueChange={(v) => setG("tipoComprobante", v)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(TIPOS_COMPROBANTE).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gNro">N° comprobante</Label>
+                <Input
+                  id="gNro"
+                  placeholder="001-001-0001234"
+                  value={gasto.nroComprobante}
+                  onChange={(e) => setG("nroComprobante", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gTimbrado">Timbrado</Label>
+                <Input
+                  id="gTimbrado"
+                  placeholder="12345678"
+                  value={gasto.timbrado}
+                  onChange={(e) => setG("timbrado", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gRuc">RUC proveedor</Label>
+                <Input
+                  id="gRuc"
+                  placeholder="80012345-6"
+                  value={gasto.rucProveedor}
+                  onChange={(e) => setG("rucProveedor", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Condición</Label>
+                <Select
+                  value={gasto.condicion}
+                  onValueChange={(v) => setG("condicion", v)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CONDICIONES_COMPRA).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>IVA</Label>
+                <Select
+                  value={gasto.tasaIva}
+                  onValueChange={(v) => setG("tasaIva", v)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TASAS_IVA.map((t) => (
+                      <SelectItem key={t.value} value={String(t.value)}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreating(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateExpense} disabled={savingGasto}>
+              {savingGasto ? "Guardando..." : "Registrar"}
             </Button>
           </DialogFooter>
         </DialogContent>

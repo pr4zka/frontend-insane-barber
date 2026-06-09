@@ -42,6 +42,19 @@ export const ordenesCompraService = {
 
 export const libroComprasService = {
   getAll: () => api.get<LibroCompras[]>("/purchases/ledger"),
+  createExpense: (data: {
+    proveedor: string;
+    monto: number;
+    categoria?: string;
+    detalle?: string;
+    fecha?: string;
+    tipoComprobante?: string;
+    nroComprobante?: string;
+    timbrado?: string;
+    condicion?: string;
+    rucProveedor?: string;
+    tasaIva?: number;
+  }) => api.post<LibroCompras>("/purchases/ledger", data),
   update: (
     id: number,
     data: {
