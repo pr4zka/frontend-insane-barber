@@ -8,6 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -19,14 +26,16 @@ import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { StatusBadge, ESTADO_ACTIVO } from "@/components/shared/status-badge";
 import { promocionesService } from "@/services/promociones.service";
-import { formatDate } from "@/lib/constants";
+import { formatDate, formatCurrency } from "@/lib/constants";
 import { toast } from "sonner";
-import type { Promocion } from "@/types";
+import type { Promocion, TipoDescuento } from "@/types";
 
 interface FormData {
   nombre: string;
   descripcion: string;
+  tipo: TipoDescuento;
   porcentaje: string;
+  monto: string;
   fechaInicio: string;
   fechaFin: string;
   estado: boolean;
@@ -35,7 +44,9 @@ interface FormData {
 const INITIAL_FORM: FormData = {
   nombre: "",
   descripcion: "",
+  tipo: "porcentaje",
   porcentaje: "",
+  monto: "",
   fechaInicio: "",
   fechaFin: "",
   estado: true,
@@ -79,9 +90,16 @@ export default function PromocionesPage() {
       setError("El nombre es requerido.");
       return;
     }
-    if (!formData.porcentaje || Number(formData.porcentaje) <= 0 || Number(formData.porcentaje) > 100) {
-      setError("El porcentaje debe estar entre 1 y 100.");
-      return;
+    if (formData.tipo === "porcentaje") {
+      if (!formData.porcentaje || Number(formData.porcentaje) <= 0 || Number(formData.porcentaje) > 100) {
+        setError("El porcentaje debe estar entre 1 y 100.");
+        return;
+      }
+    } else {
+      if (!formData.monto || Number(formData.monto) <= 0) {
+        setError("El monto debe ser mayor a 0.");
+        return;
+      }
     }
     if (!formData.fechaInicio) {
       setError("La fecha de inicio es requerida.");
@@ -101,7 +119,9 @@ export default function PromocionesPage() {
       await promocionesService.create({
         nombre: formData.nombre.trim(),
         descripcion: formData.descripcion.trim(),
-        porcentaje: Number(formData.porcentaje),
+        tipo: formData.tipo,
+        porcentaje: formData.tipo === "porcentaje" ? Number(formData.porcentaje) : null,
+        monto: formData.tipo === "monto_fijo" ? Number(formData.monto) : null,
         fechaInicio: formData.fechaInicio,
         fechaFin: formData.fechaFin,
         estado: formData.estado,
@@ -126,8 +146,11 @@ export default function PromocionesPage() {
     },
     {
       key: "porcentaje",
-      header: "Porcentaje",
-      render: (promocion) => `${promocion.porcentaje}%`,
+      header: "Descuento",
+      render: (promocion) =>
+        promocion.tipo === "monto_fijo"
+          ? formatCurrency(Number(promocion.monto ?? 0))
+          : `${promocion.porcentaje}%`,
     },
     {
       key: "fechaInicio",
@@ -210,23 +233,62 @@ export default function PromocionesPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="porcentaje">Porcentaje (%)</Label>
-              <Input
-                id="porcentaje"
-                type="number"
-                min="1"
-                max="100"
-                placeholder="10"
-                value={formData.porcentaje}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    porcentaje: e.target.value,
-                  }))
+              <Label>Tipo de promoción</Label>
+              <Select
+                value={formData.tipo}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, tipo: value as TipoDescuento }))
                 }
-                required
-              />
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="porcentaje">Porcentaje (%)</SelectItem>
+                  <SelectItem value="monto_fijo">Monto fijo (Gs)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            {formData.tipo === "porcentaje" ? (
+              <div className="space-y-2">
+                <Label htmlFor="porcentaje">Porcentaje (%)</Label>
+                <Input
+                  id="porcentaje"
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="10"
+                  value={formData.porcentaje}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      porcentaje: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="monto">Monto fijo (Gs)</Label>
+                <Input
+                  id="monto"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="5000"
+                  value={formData.monto}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      monto: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">

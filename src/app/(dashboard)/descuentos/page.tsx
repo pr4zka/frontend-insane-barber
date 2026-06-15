@@ -8,6 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -19,20 +26,25 @@ import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { StatusBadge, ESTADO_ACTIVO } from "@/components/shared/status-badge";
 import { descuentosService } from "@/services/descuentos.service";
+import { formatCurrency } from "@/lib/constants";
 import { toast } from "sonner";
-import type { Descuento } from "@/types";
+import type { Descuento, TipoDescuento } from "@/types";
 
 interface FormData {
   nombre: string;
   descripcion: string;
+  tipo: TipoDescuento;
   porcentaje: string;
+  monto: string;
   estado: boolean;
 }
 
 const INITIAL_FORM: FormData = {
   nombre: "",
   descripcion: "",
+  tipo: "porcentaje",
   porcentaje: "",
+  monto: "",
   estado: true,
 };
 
@@ -74,9 +86,16 @@ export default function DescuentosPage() {
       setError("El nombre es requerido.");
       return;
     }
-    if (!formData.porcentaje || Number(formData.porcentaje) <= 0 || Number(formData.porcentaje) > 100) {
-      setError("El porcentaje debe estar entre 1 y 100.");
-      return;
+    if (formData.tipo === "porcentaje") {
+      if (!formData.porcentaje || Number(formData.porcentaje) <= 0 || Number(formData.porcentaje) > 100) {
+        setError("El porcentaje debe estar entre 1 y 100.");
+        return;
+      }
+    } else {
+      if (!formData.monto || Number(formData.monto) <= 0) {
+        setError("El monto debe ser mayor a 0.");
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -84,7 +103,9 @@ export default function DescuentosPage() {
       await descuentosService.create({
         nombre: formData.nombre.trim(),
         descripcion: formData.descripcion.trim(),
-        porcentaje: Number(formData.porcentaje),
+        tipo: formData.tipo,
+        porcentaje: formData.tipo === "porcentaje" ? Number(formData.porcentaje) : null,
+        monto: formData.tipo === "monto_fijo" ? Number(formData.monto) : null,
         estado: formData.estado,
       });
       setDialogOpen(false);
@@ -107,8 +128,11 @@ export default function DescuentosPage() {
     },
     {
       key: "porcentaje",
-      header: "Porcentaje",
-      render: (descuento) => `${descuento.porcentaje}%`,
+      header: "Descuento",
+      render: (descuento) =>
+        descuento.tipo === "monto_fijo"
+          ? formatCurrency(Number(descuento.monto ?? 0))
+          : `${descuento.porcentaje}%`,
     },
     {
       key: "estado",
@@ -181,23 +205,62 @@ export default function DescuentosPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="porcentaje">Porcentaje (%)</Label>
-              <Input
-                id="porcentaje"
-                type="number"
-                min="1"
-                max="100"
-                placeholder="10"
-                value={formData.porcentaje}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    porcentaje: e.target.value,
-                  }))
+              <Label>Tipo de descuento</Label>
+              <Select
+                value={formData.tipo}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, tipo: value as TipoDescuento }))
                 }
-                required
-              />
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="porcentaje">Porcentaje (%)</SelectItem>
+                  <SelectItem value="monto_fijo">Monto fijo (Gs)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            {formData.tipo === "porcentaje" ? (
+              <div className="space-y-2">
+                <Label htmlFor="porcentaje">Porcentaje (%)</Label>
+                <Input
+                  id="porcentaje"
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="10"
+                  value={formData.porcentaje}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      porcentaje: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="monto">Monto fijo (Gs)</Label>
+                <Input
+                  id="monto"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="5000"
+                  value={formData.monto}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      monto: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               <Switch

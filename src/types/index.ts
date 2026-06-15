@@ -89,11 +89,15 @@ export interface NotaRemisionVenta {
 }
 
 // --- Promociones ---
+export type TipoDescuento = "porcentaje" | "monto_fijo";
+
 export interface Promocion {
   id: number;
   nombre: string;
   descripcion: string;
-  porcentaje: number;
+  tipo: TipoDescuento;
+  porcentaje: number | null;
+  monto: number | null;
   fechaInicio: string;
   fechaFin: string;
   estado: boolean;
@@ -104,7 +108,9 @@ export interface Descuento {
   id: number;
   nombre: string;
   descripcion: string;
-  porcentaje: number;
+  tipo: TipoDescuento;
+  porcentaje: number | null;
+  monto: number | null;
   estado: boolean;
 }
 

@@ -89,14 +89,22 @@ export default function NuevoCobroPage() {
   const selectedDescuento = useMemo(() => descuentos.find((d) => d.id === Number(descuentoId)), [descuentos, descuentoId]);
 
   const montoBase = Number(monto) || 0;
-  const porcentaje =
-    tipoDescuento === "promocion" && selectedPromocion
-      ? Number(selectedPromocion.porcentaje)
-      : tipoDescuento === "descuento" && selectedDescuento
-        ? Number(selectedDescuento.porcentaje)
-        : 0;
-  const montoDescuento = Math.round(montoBase * (porcentaje / 100));
+  const seleccionado =
+    tipoDescuento === "promocion"
+      ? selectedPromocion
+      : tipoDescuento === "descuento"
+        ? selectedDescuento
+        : null;
+  const montoDescuento =
+    !seleccionado || montoBase <= 0
+      ? 0
+      : seleccionado.tipo === "monto_fijo"
+        ? Math.min(montoBase, Number(seleccionado.monto ?? 0))
+        : Math.round(montoBase * (Number(seleccionado.porcentaje ?? 0) / 100));
   const montoFinal = montoBase - montoDescuento;
+
+  const labelDescuento = (d: { tipo: string; porcentaje: number | null; monto: number | null }) =>
+    d.tipo === "monto_fijo" ? formatCurrency(Number(d.monto ?? 0)) : `${d.porcentaje}%`;
 
   const handleTurnoChange = (value: string) => {
     setTurnoId(value);
@@ -299,7 +307,7 @@ export default function NuevoCobroPage() {
                         <SelectItem key={promo.id} value={String(promo.id)}>
                           <div className="flex items-center gap-2">
                             <Tag className="size-3.5" />
-                            {promo.nombre} ({promo.porcentaje}%)
+                            {promo.nombre} ({labelDescuento(promo)})
                           </div>
                         </SelectItem>
                       ))}
@@ -320,7 +328,7 @@ export default function NuevoCobroPage() {
                         <SelectItem key={desc.id} value={String(desc.id)}>
                           <div className="flex items-center gap-2">
                             <Percent className="size-3.5" />
-                            {desc.nombre} ({desc.porcentaje}%)
+                            {desc.nombre} ({labelDescuento(desc)})
                           </div>
                         </SelectItem>
                       ))}
@@ -330,7 +338,7 @@ export default function NuevoCobroPage() {
               )}
 
               {/* Resumen del descuento */}
-              {porcentaje > 0 && montoBase > 0 && (
+              {montoDescuento > 0 && montoBase > 0 && seleccionado && (
                 <Card className="border-dashed bg-muted/50">
                   <CardContent className="space-y-2 pt-4">
                     <div className="flex items-center justify-between text-xs">
@@ -339,7 +347,7 @@ export default function NuevoCobroPage() {
                     </div>
                     <div className="flex items-center justify-between text-xs text-green-600">
                       <span>
-                        {tipoDescuento === "promocion" ? "Promoción" : "Descuento"} ({porcentaje}%)
+                        {tipoDescuento === "promocion" ? "Promoción" : "Descuento"} ({labelDescuento(seleccionado)})
                       </span>
                       <span>-{formatCurrency(montoDescuento)}</span>
                     </div>
@@ -420,7 +428,7 @@ export default function NuevoCobroPage() {
               </Button>
               <Button type="submit" disabled={submitting || turnos.length === 0}>
                 <CurrencyCircleDollar className="size-4" />
-                {submitting ? "Registrando..." : `Registrar Cobro${porcentaje > 0 ? ` (${formatCurrency(montoFinal)})` : ""}`}
+                {submitting ? "Registrando..." : `Registrar Cobro${montoDescuento > 0 ? ` (${formatCurrency(montoFinal)})` : ""}`}
               </Button>
             </div>
           </form>
