@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CaretLeft, CaretRight, FloppyDisk, Tag, Percent } from "@phosphor-icons/react";
+import { CaretDown, CaretLeft, CaretRight, FloppyDisk, Tag, Percent, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,19 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -24,13 +37,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { clientesService } from "@/services/clientes.service";
 import { serviciosService } from "@/services/servicios.service";
 import { promocionesService } from "@/services/promociones.service";
 import { descuentosService } from "@/services/descuentos.service";
 import { quickCheckoutService } from "@/services/quick-checkout.service";
 import { formatCurrency, DPAGO_PLATAFORMAS } from "@/lib/constants";
 import { toast } from "sonner";
-import type { Servicio, Promocion, Descuento } from "@/types";
+import type { Servicio, Promocion, Descuento, Cliente } from "@/types";
 
 const STEPS = [
   { key: "cliente", label: "Cliente" },
@@ -63,7 +77,11 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [promociones, setPromociones] = useState<Promocion[]>([]);
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loadingCatalogo, setLoadingCatalogo] = useState(true);
+
+  const [clienteSearchOpen, setClienteSearchOpen] = useState(false);
+  const [selectedClienteId, setSelectedClienteId] = useState<number | null>(null);
 
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -92,10 +110,11 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
     async function fetchData() {
       setLoadingCatalogo(true);
       try {
-        const [serviciosRes, promosRes, descRes] = await Promise.allSettled([
+        const [serviciosRes, promosRes, descRes, clientesRes] = await Promise.allSettled([
           serviciosService.getAll(),
           promocionesService.getAll(),
           descuentosService.getAll(),
+          clientesService.getAll(),
         ]);
 
         if (serviciosRes.status === "fulfilled") {
@@ -117,6 +136,10 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
           const activos = descRes.value.data.filter((d) => d.estado);
           setDescuentos(activos);
         }
+
+        if (clientesRes.status === "fulfilled") {
+          setClientes(clientesRes.value.data);
+        }
       } catch {
         toast.error("Error al cargar datos");
       } finally {
@@ -129,6 +152,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
 
   const resetForm = () => {
     setStep(0);
+    setSelectedClienteId(null);
     setNombre("");
     setTelefono("");
     setEmail("");
@@ -150,6 +174,21 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
   useEffect(() => {
     if (open) resetForm();
   }, [open]);
+
+  const handleSelectCliente = (cliente: Cliente) => {
+    setSelectedClienteId(cliente.id);
+    setNombre(cliente.nombre);
+    setTelefono(cliente.telefono);
+    setEmail(cliente.email ?? "");
+    setClienteSearchOpen(false);
+  };
+
+  const handleClienteNuevo = () => {
+    setSelectedClienteId(null);
+    setNombre("");
+    setTelefono("");
+    setEmail("");
+  };
 
   const toggleServicio = (id: number, checked: boolean) => {
     setSelectedServicioIds((prev) => {
@@ -255,6 +294,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
     setSubmitting(true);
     try {
       const res = await quickCheckoutService.create({
+        clienteId: selectedClienteId ?? undefined,
         clienteNombre: nombre.trim(),
         clienteTelefono: telefono.trim(),
         clienteEmail: email.trim() || undefined,
@@ -314,9 +354,67 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
               <div>
                 <h3 className="text-xs font-semibold">Datos del Cliente</h3>
                 <p className="text-xs text-muted-foreground">
-                  Si ya existe un cliente con este teléfono, se reutiliza automáticamente.
+                  Buscá un cliente ya registrado o completá los datos para uno nuevo. Si editás
+                  los datos de un cliente encontrado, se actualizan.
                 </p>
               </div>
+
+              <div className="space-y-2">
+                <Label>Buscar cliente existente</Label>
+                <Popover open={clienteSearchOpen} onOpenChange={setClienteSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between font-normal"
+                    >
+                      <span className="truncate">
+                        {selectedClienteId
+                          ? clientes.find((c) => c.id === selectedClienteId)?.nombre
+                          : "Nombre, teléfono o email..."}
+                      </span>
+                      <CaretDown className="size-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[min(24rem,calc(100vw-3rem))] p-0">
+                    <Command>
+                      <CommandInput placeholder="Buscar por nombre, teléfono o email..." />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron clientes.</CommandEmpty>
+                        <CommandGroup>
+                          {clientes.map((c) => (
+                            <CommandItem
+                              key={c.id}
+                              value={`${c.nombre} ${c.telefono} ${c.email ?? ""}`}
+                              onSelect={() => handleSelectCliente(c)}
+                            >
+                              <div className="flex min-w-0 flex-col">
+                                <span className="truncate">{c.nombre}</span>
+                                <span className="truncate text-muted-foreground">
+                                  {c.telefono}
+                                  {c.email ? ` · ${c.email}` : ""}
+                                </span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {selectedClienteId && (
+                  <button
+                    type="button"
+                    onClick={handleClienteNuevo}
+                    className="flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-2"
+                  >
+                    <X className="size-3" />
+                    Es un cliente nuevo / limpiar selección
+                  </button>
+                )}
+              </div>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="nombre">Nombre y apellido *</Label>

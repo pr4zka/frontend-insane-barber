@@ -2,6 +2,7 @@ import api from "@/lib/api";
 import type { QuickCheckoutResult } from "@/types";
 
 export interface CreateQuickCheckoutPayload {
+  clienteId?: number;
   clienteNombre: string;
   clienteTelefono: string;
   clienteEmail?: string;
