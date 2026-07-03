@@ -37,7 +37,8 @@ export interface Cliente {
   id: number;
   nombre: string;
   telefono: string;
-  email: string;
+  email: string | null;
+  cortesFidelidad: number;
   fechaRegistro: string;
 }
 
@@ -223,6 +224,22 @@ export interface Pago {
   turno?: Turno;
   promocion?: Promocion;
   descuento?: Descuento;
+}
+
+// --- Registro rápido (Quick Checkout) ---
+export interface FidelidadInfo {
+  cortesFidelidad: number;
+  progreso: number;
+  meta: number;
+  completoEsteCiclo: boolean;
+  incluyoCorteEnEsteTurno: boolean;
+}
+
+export interface QuickCheckoutResult {
+  turno: Turno;
+  pago: Pago;
+  cliente: Cliente;
+  fidelidad: FidelidadInfo;
 }
 
 // --- Notas de Crédito/Débito ---

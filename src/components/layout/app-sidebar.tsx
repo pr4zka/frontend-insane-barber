@@ -66,7 +66,7 @@ const navGroups = [
   {
     label: "Modulo 2 - Agenda",
     items: [
-      { title: "Clientes", href: "/clientes", icon: Users, roles: ["administrador", "recepcionista"] },
+      { title: "Clientes", href: "/clientes", icon: Users, roles: ["administrador", "recepcionista", "barbero"] },
       { title: "Agenda", href: "/agenda", icon: CalendarDots },
     ],
   },

@@ -46,7 +46,7 @@ export default function EditarClientePage({
           setForm({
             nombre: cliente.nombre,
             telefono: cliente.telefono,
-            email: cliente.email,
+            email: cliente.email ?? "",
           });
         } else {
           router.push("/clientes");
