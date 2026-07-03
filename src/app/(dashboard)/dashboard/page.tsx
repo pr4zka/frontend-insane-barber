@@ -7,8 +7,6 @@ import {
   Users,
   CurrencyCircleDollar,
   CashRegister,
-  UserCheck,
-  Plus,
   Receipt,
   TrendUp,
   Scales,
@@ -32,6 +30,16 @@ import { formatCurrency } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import type { Turno } from "@/types";
+import { BarberoDashboard } from "./barbero-dashboard";
+
+export default function DashboardPage() {
+  const { user } = useAuth();
+  const isBarbero = user?.rol?.nombre === "barbero";
+
+  if (isBarbero) return <BarberoDashboard />;
+
+  return <StaffDashboard />;
+}
 
 interface DashboardStats {
   turnosHoy: number;
@@ -40,9 +48,8 @@ interface DashboardStats {
   cajaEstado: string;
 }
 
-export default function DashboardPage() {
+function StaffDashboard() {
   const { user } = useAuth();
-  const isBarbero = user?.rol?.nombre === "barbero";
   const isAdmin = user?.rol?.nombre === "administrador";
 
   const [stats, setStats] = useState<DashboardStats>({
@@ -59,75 +66,55 @@ export default function DashboardPage() {
     async function fetchData() {
       setLoading(true);
       try {
-        if (isBarbero) {
-          // Barbero: solo carga turnos (tiene permiso)
-          const turnosRes = await turnosService.getAll();
-          const turnos = turnosRes.data ?? [];
-          setAllTurnos(turnos);
+        const [turnosRes, clientesRes, cajaRes, pagosRes] =
+          await Promise.allSettled([
+            turnosService.getAll(),
+            clientesService.getAll(),
+            cajaService.getCurrent(),
+            pagosService.getAll(),
+          ]);
 
-          const hoy = new Date().toISOString().split("T")[0];
-          const misTurnosHoy = turnos.filter(
-            (t) => t.fecha.startsWith(hoy) && t.barbero?.usuarioId === user?.id
-          );
+        const turnos =
+          turnosRes.status === "fulfilled" ? turnosRes.value.data : [];
+        const clientes =
+          clientesRes.status === "fulfilled" ? clientesRes.value.data : [];
+        const caja =
+          cajaRes.status === "fulfilled" ? cajaRes.value.data : null;
+        const pagos =
+          pagosRes.status === "fulfilled" ? pagosRes.value.data : [];
 
-          setStats({
-            turnosHoy: misTurnosHoy.length,
-            clientes: 0,
-            ingresosHoy: 0,
-            cajaEstado: "cerrada",
+        setAllTurnos(turnos);
+
+        const hoy = new Date().toISOString().split("T")[0];
+        const turnosHoy = turnos.filter((t) => t.fecha.startsWith(hoy));
+        const ingresosHoy = pagos
+          .filter(
+            (p) => p.fecha.startsWith(hoy) && p.estado === "completado"
+          )
+          .reduce((sum, p) => sum + Number(p.monto), 0);
+
+        setStats({
+          turnosHoy: turnosHoy.length,
+          clientes: clientes.length,
+          ingresosHoy,
+          cajaEstado: caja?.estado ?? "cerrada",
+        });
+
+        // Resumen historico (solo administrador: el libro de compras es admin-only)
+        if (isAdmin) {
+          const [comprasRes, ventasRes] = await Promise.allSettled([
+            libroComprasService.getAll(),
+            libroVentasService.getAll(),
+          ]);
+          const compras =
+            comprasRes.status === "fulfilled" ? comprasRes.value.data : [];
+          const ventas =
+            ventasRes.status === "fulfilled" ? ventasRes.value.data : [];
+
+          setHistorico({
+            gastos: compras.reduce((sum, c) => sum + Number(c.monto), 0),
+            ingresos: ventas.reduce((sum, v) => sum + Number(v.monto), 0),
           });
-        } else {
-          // Admin/Recepcionista: carga todo
-          const [turnosRes, clientesRes, cajaRes, pagosRes] =
-            await Promise.allSettled([
-              turnosService.getAll(),
-              clientesService.getAll(),
-              cajaService.getCurrent(),
-              pagosService.getAll(),
-            ]);
-
-          const turnos =
-            turnosRes.status === "fulfilled" ? turnosRes.value.data : [];
-          const clientes =
-            clientesRes.status === "fulfilled" ? clientesRes.value.data : [];
-          const caja =
-            cajaRes.status === "fulfilled" ? cajaRes.value.data : null;
-          const pagos =
-            pagosRes.status === "fulfilled" ? pagosRes.value.data : [];
-
-          setAllTurnos(turnos);
-
-          const hoy = new Date().toISOString().split("T")[0];
-          const turnosHoy = turnos.filter((t) => t.fecha.startsWith(hoy));
-          const ingresosHoy = pagos
-            .filter(
-              (p) => p.fecha.startsWith(hoy) && p.estado === "completado"
-            )
-            .reduce((sum, p) => sum + Number(p.monto), 0);
-
-          setStats({
-            turnosHoy: turnosHoy.length,
-            clientes: clientes.length,
-            ingresosHoy,
-            cajaEstado: caja?.estado ?? "cerrada",
-          });
-
-          // Resumen historico (solo administrador: el libro de compras es admin-only)
-          if (isAdmin) {
-            const [comprasRes, ventasRes] = await Promise.allSettled([
-              libroComprasService.getAll(),
-              libroVentasService.getAll(),
-            ]);
-            const compras =
-              comprasRes.status === "fulfilled" ? comprasRes.value.data : [];
-            const ventas =
-              ventasRes.status === "fulfilled" ? ventasRes.value.data : [];
-
-            setHistorico({
-              gastos: compras.reduce((sum, c) => sum + Number(c.monto), 0),
-              ingresos: ventas.reduce((sum, v) => sum + Number(v.monto), 0),
-            });
-          }
         }
       } catch {
         toast.error("Error al cargar datos del dashboard");
@@ -137,70 +124,39 @@ export default function DashboardPage() {
     }
 
     fetchData();
-  }, [isBarbero, isAdmin, user?.nombre]);
+  }, [isAdmin]);
 
-  // Filtrar turnos para el barbero
   const turnosRecientes = useMemo(() => {
-    let filtered = allTurnos;
-    if (isBarbero) {
-      filtered = allTurnos.filter((t) => t.barbero?.usuarioId === user?.id);
-    }
-    return [...filtered]
+    return [...allTurnos]
       .sort(
         (a, b) =>
           new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
       )
       .slice(0, 5);
-  }, [allTurnos, isBarbero, user?.nombre]);
+  }, [allTurnos]);
 
-  // Turnos pendientes del barbero hoy
-  const turnosPendientes = useMemo(() => {
-    if (!isBarbero) return 0;
-    const hoy = new Date().toISOString().split("T")[0];
-    return allTurnos.filter(
-      (t) =>
-        t.barbero?.usuarioId === user?.id &&
-        t.fecha.startsWith(hoy) &&
-        (t.estado === "pendiente" || t.estado === "confirmado")
-    ).length;
-  }, [allTurnos, isBarbero, user?.nombre]);
-
-  // Cards según rol
-  const summaryCards = isBarbero
-    ? [
-        {
-          title: "Mis turnos hoy",
-          value: stats.turnosHoy.toString(),
-          icon: CalendarDots,
-        },
-        {
-          title: "Pendientes de atender",
-          value: turnosPendientes.toString(),
-          icon: UserCheck,
-        },
-      ]
-    : [
-        {
-          title: "Turnos del dia",
-          value: stats.turnosHoy.toString(),
-          icon: CalendarDots,
-        },
-        {
-          title: "Clientes",
-          value: stats.clientes.toString(),
-          icon: Users,
-        },
-        {
-          title: "Ingresos del dia",
-          value: formatCurrency(stats.ingresosHoy),
-          icon: CurrencyCircleDollar,
-        },
-        {
-          title: "Caja",
-          value: stats.cajaEstado === "abierta" ? "Abierta" : "Cerrada",
-          icon: CashRegister,
-        },
-      ];
+  const summaryCards = [
+    {
+      title: "Turnos del dia",
+      value: stats.turnosHoy.toString(),
+      icon: CalendarDots,
+    },
+    {
+      title: "Clientes",
+      value: stats.clientes.toString(),
+      icon: Users,
+    },
+    {
+      title: "Ingresos del dia",
+      value: formatCurrency(stats.ingresosHoy),
+      icon: CurrencyCircleDollar,
+    },
+    {
+      title: "Caja",
+      value: stats.cajaEstado === "abierta" ? "Abierta" : "Cerrada",
+      icon: CashRegister,
+    },
+  ];
 
   const gananciaNeta = historico.ingresos - historico.gastos;
   const historicoCards = [
@@ -235,15 +191,11 @@ export default function DashboardPage() {
       header: "Servicio",
       render: (turno) => turno.servicio?.nombre ?? "-",
     },
-    ...(!isBarbero
-      ? [
-          {
-            key: "barbero",
-            header: "Barbero",
-            render: (turno: Turno) => turno.barbero?.nombre ?? "-",
-          },
-        ]
-      : []),
+    {
+      key: "barbero",
+      header: "Barbero",
+      render: (turno) => turno.barbero?.nombre ?? "-",
+    },
     {
       key: "hora",
       header: "Hora",
@@ -259,17 +211,10 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={isBarbero ? `Hola, ${user?.nombre ?? "Barbero"}` : "Dashboard"}
-        description={
-          isBarbero
-            ? "Tu panel de turnos del dia"
-            : "Panel principal del sistema"
-        }
-      />
+      <PageHeader title="Dashboard" description="Panel principal del sistema" />
 
       {/* Summary Cards */}
-      <div className={`grid gap-4 ${isBarbero ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-4"}`}>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {summaryCards.map((card) => (
           <Card key={card.title}>
             <CardContent className="flex items-center gap-4">
@@ -350,46 +295,24 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {isBarbero ? (
-              <>
-                {turnosPendientes > 0 ? (
-                  <Button asChild size="sm">
-                    <Link href="/agenda">
-                      <CalendarDots className="size-4" />
-                      Ver mis turnos ({turnosPendientes} pendientes)
-                    </Link>
-                  </Button>
-                ) : (
-                  <Button asChild size="sm">
-                    <Link href="/agenda/nuevo">
-                      <Plus className="size-4" />
-                      Agendar Turno
-                    </Link>
-                  </Button>
-                )}
-              </>
-            ) : (
-              <>
-                <Button asChild size="sm">
-                  <Link href="/agenda">
-                    <CalendarDots className="size-4" />
-                    Agendar Turno
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/cobros">
-                    <CurrencyCircleDollar className="size-4" />
-                    Registrar Cobro
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/caja">
-                    <CashRegister className="size-4" />
-                    Abrir Caja
-                  </Link>
-                </Button>
-              </>
-            )}
+            <Button asChild size="sm">
+              <Link href="/agenda">
+                <CalendarDots className="size-4" />
+                Agendar Turno
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/cobros">
+                <CurrencyCircleDollar className="size-4" />
+                Registrar Cobro
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/caja">
+                <CashRegister className="size-4" />
+                Abrir Caja
+              </Link>
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -397,18 +320,14 @@ export default function DashboardPage() {
       {/* Recent Appointments */}
       <Card>
         <CardHeader>
-          <CardTitle>{isBarbero ? "Mis turnos" : "Turnos recientes"}</CardTitle>
+          <CardTitle>Turnos recientes</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable<Turno>
             columns={turnoColumns}
             data={turnosRecientes}
             loading={loading}
-            emptyMessage={
-              isBarbero
-                ? "No tienes turnos asignados."
-                : "No hay turnos registrados."
-            }
+            emptyMessage="No hay turnos registrados."
           />
         </CardContent>
       </Card>

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ElementType } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -45,7 +46,19 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
-const navGroups = [
+interface NavItem {
+  title: string;
+  href: string;
+  icon: ElementType;
+  roles?: string[];
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   {
     label: "General",
     items: [
@@ -55,7 +68,7 @@ const navGroups = [
   {
     label: "Modulo 1 - Servicios",
     items: [
-      { title: "Servicios", href: "/servicios", icon: Package },
+      { title: "Servicios", href: "/servicios", icon: Package, roles: ["administrador", "recepcionista"] },
       { title: "Promociones", href: "/promociones", icon: Tag, roles: ["administrador"] },
       { title: "Descuentos", href: "/descuentos", icon: Percent, roles: ["administrador"] },
       { title: "Reclamos", href: "/reclamos", icon: ChatCircleDots, roles: ["administrador", "recepcionista"] },
@@ -66,8 +79,8 @@ const navGroups = [
   {
     label: "Modulo 2 - Agenda",
     items: [
-      { title: "Clientes", href: "/clientes", icon: Users, roles: ["administrador", "recepcionista", "barbero"] },
-      { title: "Agenda", href: "/agenda", icon: CalendarDots },
+      { title: "Clientes", href: "/clientes", icon: Users, roles: ["administrador", "recepcionista"] },
+      { title: "Agenda", href: "/agenda", icon: CalendarDots, roles: ["administrador", "recepcionista"] },
     ],
   },
   {

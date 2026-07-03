@@ -12,6 +12,8 @@ export interface CreateQuickCheckoutPayload {
   platformId?: number;
   promocionId?: number;
   descuentoId?: number;
+  fecha?: string;
+  hora?: string;
 }
 
 export const quickCheckoutService = {
