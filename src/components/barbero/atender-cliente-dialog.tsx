@@ -57,6 +57,18 @@ function nowTimeStr() {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+// Progreso del ciclo de fidelidad "4 cortes" a partir del contador acumulado
+// que devuelve el backend (Cliente.cortesFidelidad). El beneficio (5to corte
+// con promo) no se aplica solo — lo sigue eligiendo el barbero a mano en el
+// paso de Cobro cuando corresponda.
+function fidelidadLabel(cortesFidelidad: number): { text: string; listo: boolean } {
+  const progreso = cortesFidelidad === 0 ? 0 : ((cortesFidelidad - 1) % 4) + 1;
+  return {
+    text: progreso === 4 ? "4/4 cortes — el próximo va con promo 🎉" : `${progreso}/4 cortes`,
+    listo: progreso === 4,
+  };
+}
+
 interface AtenderClienteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -206,6 +218,14 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
   const selectedDescuento = useMemo(
     () => descuentos.find((d) => d.id === Number(descuentoId)),
     [descuentos, descuentoId]
+  );
+  const selectedCliente = useMemo(
+    () => clientes.find((c) => c.id === selectedClienteId),
+    [clientes, selectedClienteId]
+  );
+  const clienteFidelidad = useMemo(
+    () => fidelidadLabel(selectedCliente?.cortesFidelidad ?? 0),
+    [selectedCliente]
   );
 
   const montoBase = Number(precioTotal) || 0;
@@ -386,6 +406,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
                                 <span className="truncate text-muted-foreground">
                                   {c.telefono}
                                   {c.email ? ` · ${c.email}` : ""}
+                                  {` · ${fidelidadLabel(c.cortesFidelidad).text}`}
                                 </span>
                               </div>
                             </CommandItem>
@@ -396,14 +417,25 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
                   </PopoverContent>
                 </Popover>
                 {selectedClienteId && (
-                  <button
-                    type="button"
-                    onClick={handleClienteNuevo}
-                    className="flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-2"
-                  >
-                    <X className="size-3" />
-                    Es un cliente nuevo / limpiar selección
-                  </button>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p
+                      className={
+                        clienteFidelidad.listo
+                          ? "text-xs font-medium text-emerald-600"
+                          : "text-xs text-muted-foreground"
+                      }
+                    >
+                      {clienteFidelidad.text}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleClienteNuevo}
+                      className="flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-2"
+                    >
+                      <X className="size-3" />
+                      Es un cliente nuevo / limpiar selección
+                    </button>
+                  </div>
                 )}
               </div>
 
