@@ -359,7 +359,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
   const progresoPct = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Atender Cliente</DialogTitle>

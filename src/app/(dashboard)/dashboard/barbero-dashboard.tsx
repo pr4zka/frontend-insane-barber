@@ -16,6 +16,7 @@ import { turnosService } from "@/services/turnos.service";
 import { serviciosService } from "@/services/servicios.service";
 import { formatCurrency, todayLocal } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import type { Turno, Servicio } from "@/types";
 
@@ -140,6 +141,7 @@ function InicioTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
 
 function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState(true);
   const [fecha, setFecha] = useState(() => todayLocal());
@@ -183,7 +185,15 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
   const columns: DataTableColumn<Turno>[] = [
     { key: "hora", header: "Hora" },
     { key: "cliente", header: "Cliente", render: (t) => t.cliente?.nombre ?? "-" },
-    { key: "servicio", header: "Servicio", render: (t) => t.servicio?.nombre ?? "-" },
+    ...(!isMobile
+      ? [
+          {
+            key: "servicio",
+            header: "Servicio",
+            render: (t: Turno) => t.servicio?.nombre ?? "-",
+          },
+        ]
+      : []),
     {
       key: "estado",
       header: "Estado",
