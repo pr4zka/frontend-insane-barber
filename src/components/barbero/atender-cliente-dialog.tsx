@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CaretDown, CaretLeft, CaretRight, FloppyDisk, Tag, Percent, X } from "@phosphor-icons/react";
+import { CaretDown, CaretLeft, CaretRight, CheckCircle, FloppyDisk, Plus, Tag, Percent, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -81,6 +81,16 @@ interface AtenderClienteDialogProps {
   onSuccess?: () => void;
 }
 
+interface SuccessInfo {
+  clienteNombre: string;
+  monto: number;
+  gratis: boolean;
+  incluyeCorte: boolean;
+  progreso: number;
+  meta: number;
+  completoEsteCiclo: boolean;
+}
+
 export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderClienteDialogProps) {
   const [step, setStep] = useState(0);
 
@@ -115,6 +125,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [successInfo, setSuccessInfo] = useState<SuccessInfo | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -182,8 +193,13 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
   };
 
   useEffect(() => {
-    if (open) resetForm();
+    if (open) {
+      resetForm();
+      setSuccessInfo(null);
+    }
   }, [open]);
+
+  const handleAtenderOtro = () => setSuccessInfo(null);
 
   const handleSelectCliente = (cliente: Cliente) => {
     setSelectedClienteId(cliente.id);
@@ -338,12 +354,16 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
         hora,
       });
 
-      const { fidelidad } = res.data;
-      const gratisMsg = fidelidad.gratisAplicado ? " 🎉 ¡Corte de fidelidad gratis aplicado!" : "";
-      const progresoMsg = fidelidad.incluyoCorteEnEsteTurno
-        ? ` ${fidelidad.progreso}/${fidelidad.meta} cortes${fidelidad.completoEsteCiclo && !fidelidad.gratisAplicado ? " 🎉 ¡Completó el ciclo!" : ""}`
-        : "";
-      toast.success(`Cliente y cobro registrados.${gratisMsg}${progresoMsg}`);
+      const { fidelidad, pago } = res.data;
+      setSuccessInfo({
+        clienteNombre: nombre.trim(),
+        monto: Number(pago.monto),
+        gratis: fidelidad.gratisAplicado,
+        incluyeCorte: fidelidad.incluyoCorteEnEsteTurno,
+        progreso: fidelidad.progreso,
+        meta: fidelidad.meta,
+        completoEsteCiclo: fidelidad.completoEsteCiclo,
+      });
       resetForm();
       onSuccess?.();
     } catch (err: unknown) {
@@ -368,17 +388,57 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              Paso {step + 1} de {STEPS.length}: {STEPS[step].label}
-            </span>
-            <span>{Math.round(progresoPct)}%</span>
+        {successInfo ? (
+          <div className="flex flex-col items-center gap-4 py-6 text-center">
+            <div className="flex size-20 items-center justify-center rounded-full bg-emerald-600/10 text-emerald-600">
+              <CheckCircle className="size-12" weight="fill" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-semibold text-emerald-600">¡Cobrado con éxito!</h3>
+              <p className="text-sm text-muted-foreground">{successInfo.clienteNombre}</p>
+            </div>
+            <div className="w-full space-y-2 border border-dashed bg-muted/50 p-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Monto cobrado</span>
+                <span className="font-semibold">
+                  {successInfo.gratis ? "Gratis 🎉" : formatCurrency(successInfo.monto)}
+                </span>
+              </div>
+              {successInfo.incluyeCorte && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Fidelidad</span>
+                  <span className="font-medium">
+                    {successInfo.progreso}/{successInfo.meta} cortes
+                    {successInfo.completoEsteCiclo && !successInfo.gratis ? " 🎉" : ""}
+                  </span>
+                </div>
+              )}
+            </div>
+            <Button size="lg" className="w-full" onClick={handleAtenderOtro}>
+              <Plus className="size-5" />
+              Atender otro cliente
+            </Button>
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="text-xs text-muted-foreground underline underline-offset-2"
+            >
+              Cerrar
+            </button>
           </div>
-          <Progress value={progresoPct} />
-        </div>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>
+                  Paso {step + 1} de {STEPS.length}: {STEPS[step].label}
+                </span>
+                <span>{Math.round(progresoPct)}%</span>
+              </div>
+              <Progress value={progresoPct} />
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
           {step === 0 && (
             <div className="space-y-4">
               <div>
@@ -765,7 +825,9 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
               </Button>
             )}
           </DialogFooter>
-        </form>
+            </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
