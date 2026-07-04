@@ -58,15 +58,21 @@ function nowTimeStr() {
 }
 
 // Progreso del ciclo de fidelidad "4 cortes" a partir del contador acumulado
-// que devuelve el backend (Cliente.cortesFidelidad). El beneficio (5to corte
-// con promo) no se aplica solo — lo sigue eligiendo el barbero a mano en el
-// paso de Cobro cuando corresponda.
+// que devuelve el backend (Cliente.cortesFidelidad). Cuando el contador ya es
+// multiplo de 4, el backend aplica el 5to corte gratis automaticamente (salvo
+// que el barbero elija una promocion/descuento a mano).
 function fidelidadLabel(cortesFidelidad: number): { text: string; listo: boolean } {
   const progreso = cortesFidelidad === 0 ? 0 : ((cortesFidelidad - 1) % 4) + 1;
   return {
-    text: progreso === 4 ? "4/4 cortes — el próximo va con promo 🎉" : `${progreso}/4 cortes`,
+    text: progreso === 4 ? "4/4 cortes — el próximo corte es gratis 🎉" : `${progreso}/4 cortes`,
     listo: progreso === 4,
   };
+}
+
+// Misma heuristica que el backend (nombre de servicio contiene "corte") para
+// mostrar en vivo si este turno califica para el corte de fidelidad gratis.
+function esCorteServicio(nombre: string) {
+  return nombre.toLowerCase().includes("corte");
 }
 
 interface AtenderClienteDialogProps {
@@ -227,6 +233,14 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
     () => fidelidadLabel(selectedCliente?.cortesFidelidad ?? 0),
     [selectedCliente]
   );
+  const incluyeCorte = useMemo(
+    () => servicios.some((s) => selectedServicioIds.has(s.id) && esCorteServicio(s.nombre)),
+    [servicios, selectedServicioIds]
+  );
+  const fidelidadGratisElegible =
+    incluyeCorte &&
+    (selectedCliente?.cortesFidelidad ?? 0) > 0 &&
+    (selectedCliente?.cortesFidelidad ?? 0) % 4 === 0;
 
   const montoBase = Number(precioTotal) || 0;
   const seleccionado =
@@ -241,7 +255,10 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
       : seleccionado.tipo === "monto_fijo"
         ? Math.min(montoBase, Number(seleccionado.monto ?? 0))
         : Math.round(montoBase * (Number(seleccionado.porcentaje ?? 0) / 100));
-  const montoFinal = montoBase - montoDescuento;
+  // El automatico de fidelidad solo aplica si el barbero no eligio otra
+  // promo/descuento a mano (misma regla que el backend).
+  const fidelidadGratisAplica = tipoDescuento === "ninguno" && fidelidadGratisElegible;
+  const montoFinal = fidelidadGratisAplica ? 0 : montoBase - montoDescuento;
 
   const labelDescuento = (d: { tipo: string; porcentaje: number | null; monto: number | null }) =>
     d.tipo === "monto_fijo" ? formatCurrency(Number(d.monto ?? 0)) : `${d.porcentaje}%`;
@@ -322,10 +339,11 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
       });
 
       const { fidelidad } = res.data;
+      const gratisMsg = fidelidad.gratisAplicado ? " 🎉 ¡Corte de fidelidad gratis aplicado!" : "";
       const progresoMsg = fidelidad.incluyoCorteEnEsteTurno
-        ? ` ${fidelidad.progreso}/${fidelidad.meta} cortes${fidelidad.completoEsteCiclo ? " 🎉 ¡Completó el ciclo!" : ""}`
+        ? ` ${fidelidad.progreso}/${fidelidad.meta} cortes${fidelidad.completoEsteCiclo && !fidelidad.gratisAplicado ? " 🎉 ¡Completó el ciclo!" : ""}`
         : "";
-      toast.success(`Cliente y cobro registrados.${progresoMsg}`);
+      toast.success(`Cliente y cobro registrados.${gratisMsg}${progresoMsg}`);
       resetForm();
       onSuccess?.();
     } catch (err: unknown) {
@@ -548,6 +566,14 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
                 <h3 className="text-xs font-semibold">Precio y Pago</h3>
               </div>
 
+              {fidelidadGratisElegible && (
+                <div className="rounded-none border border-emerald-600/30 bg-emerald-600/10 p-3 text-xs text-emerald-700">
+                  🎉 Este cliente completó el ciclo de fidelidad — este corte se cobra{" "}
+                  <strong>gratis</strong> automáticamente (a menos que elijas otra promoción o
+                  descuento abajo).
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>Promoción o Descuento</Label>
                 <Select value={tipoDescuento} onValueChange={handleTipoDescuentoChange}>
@@ -608,26 +634,46 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
                 </div>
               )}
 
-              {montoDescuento > 0 && montoBase > 0 && seleccionado && (
+              {fidelidadGratisAplica && montoBase > 0 ? (
                 <Card className="border-dashed bg-muted/50">
                   <CardContent className="space-y-2 pt-4">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground">Precio original</span>
                       <span>{formatCurrency(montoBase)}</span>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-green-600">
-                      <span>
-                        {tipoDescuento === "promocion" ? "Promoción" : "Descuento"} ({labelDescuento(seleccionado)})
-                      </span>
-                      <span>-{formatCurrency(montoDescuento)}</span>
+                    <div className="flex items-center justify-between text-xs text-emerald-600">
+                      <span>Fidelidad (4 cortes)</span>
+                      <span>-{formatCurrency(montoBase)}</span>
                     </div>
                     <Separator />
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold">Total a cobrar</span>
-                      <span className="text-sm font-semibold">{formatCurrency(montoFinal)}</span>
+                      <span className="text-sm font-semibold text-emerald-600">Gratis 🎉</span>
                     </div>
                   </CardContent>
                 </Card>
+              ) : (
+                montoDescuento > 0 && montoBase > 0 && seleccionado && (
+                  <Card className="border-dashed bg-muted/50">
+                    <CardContent className="space-y-2 pt-4">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Precio original</span>
+                        <span>{formatCurrency(montoBase)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-green-600">
+                        <span>
+                          {tipoDescuento === "promocion" ? "Promoción" : "Descuento"} ({labelDescuento(seleccionado)})
+                        </span>
+                        <span>-{formatCurrency(montoDescuento)}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold">Total a cobrar</span>
+                        <span className="text-sm font-semibold">{formatCurrency(montoFinal)}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
               )}
 
               <div className="space-y-2">
@@ -715,7 +761,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
                 <FloppyDisk className="size-4" />
                 {submitting
                   ? "Guardando..."
-                  : `Guardar${montoBase > 0 ? ` (${formatCurrency(montoFinal)})` : ""}`}
+                  : `Guardar${montoBase > 0 ? ` (${fidelidadGratisAplica ? "Gratis 🎉" : formatCurrency(montoFinal)})` : ""}`}
               </Button>
             )}
           </DialogFooter>

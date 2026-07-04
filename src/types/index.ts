@@ -233,6 +233,7 @@ export interface FidelidadInfo {
   meta: number;
   completoEsteCiclo: boolean;
   incluyoCorteEnEsteTurno: boolean;
+  gratisAplicado: boolean;
 }
 
 export interface QuickCheckoutResult {
