@@ -27,7 +27,7 @@ import { turnosService } from "@/services/turnos.service";
 import { pagosService } from "@/services/pagos.service";
 import { promocionesService } from "@/services/promociones.service";
 import { descuentosService } from "@/services/descuentos.service";
-import { formatCurrency, DPAGO_PLATAFORMAS } from "@/lib/constants";
+import { formatCurrency, DPAGO_PLATAFORMAS, todayLocal } from "@/lib/constants";
 import { toast } from "sonner";
 import type { Turno, Promocion, Descuento } from "@/types";
 
@@ -63,7 +63,7 @@ export default function NuevoCobroPage() {
         }
 
         if (promosRes.status === "fulfilled") {
-          const hoy = new Date().toISOString().split("T")[0];
+          const hoy = todayLocal();
           const activas = promosRes.value.data.filter(
             (p) => p.estado && p.fechaInicio <= hoy && p.fechaFin >= hoy
           );

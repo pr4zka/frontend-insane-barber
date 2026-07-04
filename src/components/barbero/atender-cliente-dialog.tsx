@@ -42,7 +42,7 @@ import { serviciosService } from "@/services/servicios.service";
 import { promocionesService } from "@/services/promociones.service";
 import { descuentosService } from "@/services/descuentos.service";
 import { quickCheckoutService } from "@/services/quick-checkout.service";
-import { formatCurrency, DPAGO_PLATAFORMAS } from "@/lib/constants";
+import { formatCurrency, DPAGO_PLATAFORMAS, todayLocal } from "@/lib/constants";
 import { toast } from "sonner";
 import type { Servicio, Promocion, Descuento, Cliente } from "@/types";
 
@@ -51,14 +51,6 @@ const STEPS = [
   { key: "servicio", label: "Servicio" },
   { key: "cobro", label: "Cobro" },
 ] as const;
-
-function nowDateStr() {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
 
 function nowTimeStr() {
   const d = new Date();
@@ -100,7 +92,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
 
   const [metodoPago, setMetodoPago] = useState("");
   const [platformId, setPlatformId] = useState("");
-  const [fecha, setFecha] = useState(nowDateStr());
+  const [fecha, setFecha] = useState(todayLocal());
   const [hora, setHora] = useState(nowTimeStr());
 
   const [submitting, setSubmitting] = useState(false);
@@ -125,7 +117,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
         }
 
         if (promosRes.status === "fulfilled") {
-          const hoy = new Date().toISOString().split("T")[0];
+          const hoy = todayLocal();
           const activas = promosRes.value.data.filter(
             (p) => p.estado && p.fechaInicio <= hoy && p.fechaFin >= hoy
           );
@@ -166,7 +158,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
     setDescuentoId("");
     setMetodoPago("");
     setPlatformId("");
-    setFecha(nowDateStr());
+    setFecha(todayLocal());
     setHora(nowTimeStr());
     setError("");
   };

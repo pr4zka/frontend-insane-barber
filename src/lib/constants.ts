@@ -155,3 +155,14 @@ export function formatDateTime(date: string): string {
     minute: "2-digit",
   });
 }
+
+// Fecha de "hoy" en la hora local del navegador (YYYY-MM-DD). No usar
+// `new Date().toISOString()` para esto: siempre da la fecha en UTC, que
+// en Paraguay (UTC-4) ya es "mañana" desde las 20:00 en adelante.
+export function todayLocal(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}

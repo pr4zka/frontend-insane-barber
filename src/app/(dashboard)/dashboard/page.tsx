@@ -26,7 +26,7 @@ import { cajaService } from "@/services/caja.service";
 import { pagosService } from "@/services/pagos.service";
 import { libroComprasService } from "@/services/compras.service";
 import { libroVentasService } from "@/services/libro-ventas.service";
-import { formatCurrency } from "@/lib/constants";
+import { formatCurrency, todayLocal } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import type { Turno } from "@/types";
@@ -85,7 +85,7 @@ function StaffDashboard() {
 
         setAllTurnos(turnos);
 
-        const hoy = new Date().toISOString().split("T")[0];
+        const hoy = todayLocal();
         const turnosHoy = turnos.filter((t) => t.fecha.startsWith(hoy));
         const ingresosHoy = pagos
           .filter(

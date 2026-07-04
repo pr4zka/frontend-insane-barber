@@ -30,7 +30,7 @@ import {
 } from "@/components/shared/status-badge";
 import { reportesService } from "@/services/reportes.service";
 import { barberosService } from "@/services/barberos.service";
-import { formatCurrency, formatDate } from "@/lib/constants";
+import { formatCurrency, formatDate, todayLocal } from "@/lib/constants";
 
 import type {
   ReporteIngreso,
@@ -55,7 +55,7 @@ interface ReporteReclamo {
 // Shared date-range filter state
 // -------------------------------------------------------------------
 function useDateRange() {
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayLocal();
   const [desde, setDesde] = useState(today);
   const [hasta, setHasta] = useState(today);
   return { desde, hasta, setDesde, setHasta };

@@ -14,7 +14,7 @@ import { StatusBadge, TURNO_ESTADOS } from "@/components/shared/status-badge";
 import { AtenderClienteDialog } from "@/components/barbero/atender-cliente-dialog";
 import { turnosService } from "@/services/turnos.service";
 import { serviciosService } from "@/services/servicios.service";
-import { formatCurrency } from "@/lib/constants";
+import { formatCurrency, todayLocal } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import type { Turno, Servicio } from "@/types";
@@ -65,7 +65,7 @@ function InicioTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
       try {
         const res = await turnosService.getAll();
         const turnos = res.data ?? [];
-        const hoy = new Date().toISOString().split("T")[0];
+        const hoy = todayLocal();
         const misTurnos = turnos.filter((t) => t.barbero?.usuarioId === user?.id);
         setTurnosHoy(misTurnos.filter((t) => t.fecha.startsWith(hoy)).length);
         setPendientes(
@@ -142,7 +142,7 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
   const { user } = useAuth();
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState(true);
-  const [fecha, setFecha] = useState(() => new Date().toISOString().split("T")[0]);
+  const [fecha, setFecha] = useState(() => todayLocal());
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {

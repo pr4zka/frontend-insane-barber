@@ -26,6 +26,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { turnosService } from "@/services/turnos.service";
 import { barberosService } from "@/services/barberos.service";
 import { useAuth } from "@/hooks/use-auth";
+import { todayLocal } from "@/lib/constants";
 import type { Turno, Barbero } from "@/types";
 
 export default function AgendaPage() {
@@ -34,10 +35,7 @@ export default function AgendaPage() {
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [barberos, setBarberos] = useState<Barbero[]>([]);
   const [loading, setLoading] = useState(true);
-  const [fecha, setFecha] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  });
+  const [fecha, setFecha] = useState(() => todayLocal());
   const [barberoFilter, setBarberoFilter] = useState("todos");
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [turnoToCancel, setTurnoToCancel] = useState<number | null>(null);
