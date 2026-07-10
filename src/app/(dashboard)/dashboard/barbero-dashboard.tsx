@@ -177,6 +177,11 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
     [turnos, desde, hasta, user?.id]
   );
 
+  const cortesBarbero = useMemo(
+    () => filteredTurnos.filter((t) => t.estado === "atendido" || t.estado === "cobrado").length,
+    [filteredTurnos]
+  );
+
   const handleConfirm = async (id: number) => {
     if (actionLoading) return;
     setActionLoading(id);
@@ -228,6 +233,11 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
   const columns: DataTableColumn<Turno>[] = [
     { key: "hora", header: "Hora" },
     { key: "cliente", header: "Cliente", render: (t) => t.cliente?.nombre ?? "-" },
+    {
+      key: "cortes",
+      header: "Cortes",
+      render: (t) => t.cliente?.cortesFidelidad ?? 0,
+    },
     ...(!isMobile
       ? [
           {
@@ -338,6 +348,11 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
           Atender Cliente
         </Button>
       </div>
+
+      <p className="text-sm text-muted-foreground">
+        Cortes realizados en el rango:{" "}
+        <span className="font-semibold text-foreground">{cortesBarbero}</span>
+      </p>
 
       <DataTable
         columns={columns}
