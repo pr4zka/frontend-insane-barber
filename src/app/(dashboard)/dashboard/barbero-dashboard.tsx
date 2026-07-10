@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CalendarDots, Plus, UserCheck, UserPlus } from "@phosphor-icons/react";
+import { CalendarDots, CheckCircle, Plus, UserCheck, UserPlus, XCircle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,10 +11,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { StatusBadge, TURNO_ESTADOS } from "@/components/shared/status-badge";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { AtenderClienteDialog } from "@/components/barbero/atender-cliente-dialog";
 import { turnosService } from "@/services/turnos.service";
 import { serviciosService } from "@/services/servicios.service";
-import { formatCurrency, todayLocal } from "@/lib/constants";
+import { formatCurrency, monthRangeLocal, todayLocal } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -144,8 +145,12 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
   const isMobile = useIsMobile();
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState(true);
-  const [fecha, setFecha] = useState(() => todayLocal());
+  const initialRange = useMemo(() => monthRangeLocal(), []);
+  const [desde, setDesde] = useState(initialRange.desde);
+  const [hasta, setHasta] = useState(initialRange.hasta);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelId, setCancelId] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -164,9 +169,27 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
   }, [fetchData]);
 
   const filteredTurnos = useMemo(
-    () => turnos.filter((t) => t.fecha.startsWith(fecha) && t.barbero?.usuarioId === user?.id),
-    [turnos, fecha, user?.id]
+    () =>
+      turnos.filter((t) => {
+        const f = t.fecha.slice(0, 10);
+        return f >= desde && f <= hasta && t.barbero?.usuarioId === user?.id;
+      }),
+    [turnos, desde, hasta, user?.id]
   );
+
+  const handleConfirm = async (id: number) => {
+    if (actionLoading) return;
+    setActionLoading(id);
+    try {
+      await turnosService.confirm(id);
+      toast.success("Turno confirmado");
+      await fetchData();
+    } catch {
+      toast.error("Error al confirmar el turno");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const handleAtendido = async (id: number) => {
     if (actionLoading) return;
@@ -179,6 +202,26 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
       toast.error("Error al marcar turno como atendido");
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const openCancelDialog = (id: number) => {
+    setCancelId(id);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancel = async () => {
+    if (cancelId === null) return;
+    setActionLoading(cancelId);
+    try {
+      await turnosService.cancel(cancelId);
+      toast.success("Turno cancelado");
+      await fetchData();
+    } catch {
+      toast.error("Error al cancelar el turno");
+    } finally {
+      setActionLoading(null);
+      setCancelId(null);
     }
   };
 
@@ -202,36 +245,93 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
     {
       key: "acciones",
       header: "Acciones",
-      render: (t) =>
-        t.estado === "confirmado" ? (
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={actionLoading === t.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAtendido(t.id);
-            }}
-          >
-            <UserCheck className="mr-1 h-3.5 w-3.5" />
-            {actionLoading === t.id ? "..." : "Atendido"}
-          </Button>
-        ) : null,
+      render: (t) => (
+        <div className="flex items-center gap-1">
+          {t.estado === "pendiente" && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={actionLoading === t.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleConfirm(t.id);
+                }}
+              >
+                <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                {actionLoading === t.id ? "..." : "Confirmar"}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!!actionLoading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openCancelDialog(t.id);
+                }}
+              >
+                <XCircle className="mr-1 h-3.5 w-3.5" />
+                Cancelar
+              </Button>
+            </>
+          )}
+          {t.estado === "confirmado" && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={actionLoading === t.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAtendido(t.id);
+                }}
+              >
+                <UserCheck className="mr-1 h-3.5 w-3.5" />
+                {actionLoading === t.id ? "..." : "Atendido"}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!!actionLoading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openCancelDialog(t.id);
+                }}
+              >
+                <XCircle className="mr-1 h-3.5 w-3.5" />
+                Cancelar
+              </Button>
+            </>
+          )}
+        </div>
+      ),
     },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-2">
-          <Label htmlFor="fecha-agenda">Fecha</Label>
-          <Input
-            id="fecha-agenda"
-            type="date"
-            value={fecha}
-            onChange={(e) => setFecha(e.target.value)}
-            className="w-full sm:w-[180px]"
-          />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+          <div className="space-y-2">
+            <Label htmlFor="fecha-desde">Desde</Label>
+            <Input
+              id="fecha-desde"
+              type="date"
+              value={desde}
+              onChange={(e) => setDesde(e.target.value)}
+              className="w-full sm:w-[170px]"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="fecha-hasta">Hasta</Label>
+            <Input
+              id="fecha-hasta"
+              type="date"
+              value={hasta}
+              onChange={(e) => setHasta(e.target.value)}
+              className="w-full sm:w-[170px]"
+            />
+          </div>
         </div>
         <Button className="w-full sm:w-auto" onClick={onAtenderCliente}>
           <Plus className="size-4" />
@@ -243,7 +343,17 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
         columns={columns}
         data={filteredTurnos}
         loading={loading}
-        emptyMessage="No hay turnos para la fecha seleccionada."
+        emptyMessage="No hay turnos en el rango seleccionado."
+      />
+
+      <ConfirmDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        title="Cancelar Turno"
+        description="¿Está seguro que desea cancelar este turno? Esta acción no se puede deshacer."
+        onConfirm={handleCancel}
+        confirmText="Cancelar Turno"
+        destructive
       />
     </div>
   );

@@ -166,3 +166,14 @@ export function todayLocal(): string {
   const dd = String(d.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 }
+
+export function monthRangeLocal(): { desde: string; hasta: string } {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = d.getMonth();
+  const first = new Date(yyyy, mm, 1);
+  const last = new Date(yyyy, mm + 1, 0); // día 0 del mes siguiente = último del actual
+  const fmt = (x: Date) =>
+    `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+  return { desde: fmt(first), hasta: fmt(last) };
+}
