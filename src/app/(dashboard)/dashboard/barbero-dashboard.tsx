@@ -15,7 +15,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { AtenderClienteDialog } from "@/components/barbero/atender-cliente-dialog";
 import { turnosService } from "@/services/turnos.service";
 import { serviciosService } from "@/services/servicios.service";
-import { formatCurrency, formatDate, monthRangeLocal, todayLocal } from "@/lib/constants";
+import { formatCurrency, formatDateOnly, monthRangeLocal, todayLocal } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -246,7 +246,7 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
   };
 
   const columns: DataTableColumn<Turno>[] = [
-    { key: "fecha", header: "Fecha", render: (t) => formatDate(t.fecha) },
+    { key: "fecha", header: "Fecha", render: (t) => formatDateOnly(t.fecha) },
     { key: "hora", header: "Hora" },
     { key: "cliente", header: "Cliente", render: (t) => t.cliente?.nombre ?? "-" },
     {

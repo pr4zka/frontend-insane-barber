@@ -146,6 +146,14 @@ export function formatDate(date: string): string {
   });
 }
 
+// Formatea solo la parte de fecha de un ISO date/datetime como dd/mm/yyyy, sin
+// pasar por Date: un datetime a medianoche UTC retrocede un dia al convertirse
+// a hora local de Paraguay (UTC-4).
+export function formatDateOnly(date: string): string {
+  const [yyyy, mm, dd] = date.slice(0, 10).split("-");
+  return `${dd}/${mm}/${yyyy}`;
+}
+
 export function formatDateTime(date: string): string {
   return new Date(date).toLocaleString("es-PY", {
     day: "2-digit",
