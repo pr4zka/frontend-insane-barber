@@ -15,7 +15,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { AtenderClienteDialog } from "@/components/barbero/atender-cliente-dialog";
 import { turnosService } from "@/services/turnos.service";
 import { serviciosService } from "@/services/servicios.service";
-import { formatCurrency, monthRangeLocal, todayLocal } from "@/lib/constants";
+import { formatCurrency, formatDate, monthRangeLocal, todayLocal } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -170,16 +170,31 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
 
   const filteredTurnos = useMemo(
     () =>
-      turnos.filter((t) => {
-        const f = t.fecha.slice(0, 10);
-        return f >= desde && f <= hasta && t.barbero?.usuarioId === user?.id;
-      }),
+      turnos
+        .filter((t) => {
+          const f = t.fecha.slice(0, 10);
+          return f >= desde && f <= hasta && t.barbero?.usuarioId === user?.id;
+        })
+        .sort((a, b) =>
+          `${b.fecha.slice(0, 10)} ${b.hora}`.localeCompare(`${a.fecha.slice(0, 10)} ${a.hora}`)
+        ),
     [turnos, desde, hasta, user?.id]
   );
 
-  const cortesBarbero = useMemo(
-    () => filteredTurnos.filter((t) => t.estado === "atendido" || t.estado === "cobrado").length,
+  const turnosRealizados = useMemo(
+    () => filteredTurnos.filter((t) => t.estado === "atendido" || t.estado === "cobrado"),
     [filteredTurnos]
+  );
+
+  const cortesBarbero = turnosRealizados.length;
+
+  const montoTotal = useMemo(
+    () =>
+      turnosRealizados.reduce(
+        (sum, t) => sum + Number(t.pago?.monto ?? t.servicio?.precio ?? 0),
+        0
+      ),
+    [turnosRealizados]
   );
 
   const handleConfirm = async (id: number) => {
@@ -231,6 +246,7 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
   };
 
   const columns: DataTableColumn<Turno>[] = [
+    { key: "fecha", header: "Fecha", render: (t) => formatDate(t.fecha) },
     { key: "hora", header: "Hora" },
     { key: "cliente", header: "Cliente", render: (t) => t.cliente?.nombre ?? "-" },
     {
@@ -352,6 +368,8 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
       <p className="text-sm text-muted-foreground">
         Cortes realizados en el rango:{" "}
         <span className="font-semibold text-foreground">{cortesBarbero}</span>
+        {" · "}Monto total:{" "}
+        <span className="font-semibold text-foreground">{formatCurrency(montoTotal)}</span>
       </p>
 
       <DataTable
