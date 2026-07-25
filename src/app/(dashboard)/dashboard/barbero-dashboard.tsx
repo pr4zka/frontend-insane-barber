@@ -264,6 +264,11 @@ function AgendaTab({ onAtenderCliente }: { onAtenderCliente: () => void }) {
         ]
       : []),
     {
+      key: "monto",
+      header: "Monto",
+      render: (t) => formatCurrency(Number(t.pago?.monto ?? t.servicio?.precio ?? 0)),
+    },
+    {
       key: "estado",
       header: "Estado",
       render: (t) => <StatusBadge status={t.estado} config={TURNO_ESTADOS} />,
