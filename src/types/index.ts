@@ -36,7 +36,7 @@ export interface Usuario {
 export interface Cliente {
   id: number;
   nombre: string;
-  telefono: string;
+  telefono: string | null;
   email: string | null;
   cortesFidelidad: number;
   fechaRegistro: string;

@@ -45,7 +45,7 @@ export default function EditarClientePage({
         if (cliente) {
           setForm({
             nombre: cliente.nombre,
-            telefono: cliente.telefono,
+            telefono: cliente.telefono ?? "",
             email: cliente.email ?? "",
           });
         } else {

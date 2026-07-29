@@ -4,7 +4,7 @@ import type { QuickCheckoutResult } from "@/types";
 export interface CreateQuickCheckoutPayload {
   clienteId?: number;
   clienteNombre: string;
-  clienteTelefono: string;
+  clienteTelefono?: string;
   clienteEmail?: string;
   servicioIds: number[];
   otroServicio?: string;

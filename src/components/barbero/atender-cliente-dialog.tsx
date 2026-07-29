@@ -204,7 +204,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
   const handleSelectCliente = (cliente: Cliente) => {
     setSelectedClienteId(cliente.id);
     setNombre(cliente.nombre);
-    setTelefono(cliente.telefono);
+    setTelefono(cliente.telefono ?? "");
     setEmail(cliente.email ?? "");
     setClienteSearchOpen(false);
   };
@@ -288,7 +288,6 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
   const validateStep = (s: number): string | null => {
     if (s === 0) {
       if (!nombre.trim()) return "Ingresá el nombre y apellido del cliente.";
-      if (!telefono.trim()) return "Ingresá el teléfono del cliente.";
     }
     if (s === 1) {
       if (selectedServicioIds.size === 0)
@@ -341,7 +340,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
       const res = await quickCheckoutService.create({
         clienteId: selectedClienteId ?? undefined,
         clienteNombre: nombre.trim(),
-        clienteTelefono: telefono.trim(),
+        clienteTelefono: telefono.trim() || undefined,
         clienteEmail: email.trim() || undefined,
         servicioIds,
         otroServicio: otroChecked ? otroTexto.trim() : undefined,
@@ -476,13 +475,13 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
                           {clientes.map((c) => (
                             <CommandItem
                               key={c.id}
-                              value={`${c.nombre} ${c.telefono} ${c.email ?? ""}`}
+                              value={`${c.nombre} ${c.telefono ?? ""} ${c.email ?? ""}`}
                               onSelect={() => handleSelectCliente(c)}
                             >
                               <div className="flex min-w-0 flex-col">
                                 <span className="truncate">{c.nombre}</span>
                                 <span className="truncate text-muted-foreground">
-                                  {c.telefono}
+                                  {c.telefono ?? "Sin teléfono"}
                                   {c.email ? ` · ${c.email}` : ""}
                                   {` · ${fidelidadLabel(c.cortesFidelidad).text}`}
                                 </span>
@@ -528,7 +527,7 @@ export function AtenderClienteDialog({ open, onOpenChange, onSuccess }: AtenderC
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="telefono">Teléfono *</Label>
+                  <Label htmlFor="telefono">Teléfono</Label>
                   <Input
                     id="telefono"
                     value={telefono}
